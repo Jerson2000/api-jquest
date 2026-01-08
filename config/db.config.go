@@ -18,7 +18,7 @@ func configDatabaseConnection() {
 	Database, err = gorm.Open(postgres.Open(dsn), &gorm.Config{TranslateError: true})
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	Database.AutoMigrate(

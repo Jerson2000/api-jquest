@@ -12,7 +12,6 @@ import (
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	en_translations "github.com/go-playground/validator/v10/translations/en"
-	"github.com/jerson2000/jquest/config"
 	"github.com/jerson2000/jquest/enums"
 	"github.com/jerson2000/jquest/middlewares"
 )
@@ -20,7 +19,6 @@ import (
 var trans ut.Translator
 
 func InitController(router *gin.Engine) {
-	config.InitConfig()
 	initValidator()
 
 	router.Use(cors.Default())
