@@ -1,0 +1,51 @@
+package controllers
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jerson2000/jquest/internal/dtos"
+	"github.com/jerson2000/jquest/internal/responses"
+	"github.com/jerson2000/jquest/internal/services"
+	"github.com/jerson2000/jquest/internal/utils"
+)
+
+type authController struct {
+	service services.AuthService
+}
+
+func newAuthController() *authController {
+	service := services.NewAuthService()
+	return &authController{service: service}
+}
+
+func (auth *authController) registerRoutes(r *gin.RouterGroup) {
+	routes := r.Group("/auth")
+	{
+		routes.POST("login", auth.login)
+		routes.POST("signup", auth.signup)
+	}
+}
+
+func (auth *authController) login(c *gin.Context) {
+	var dto dtos.AuthLoginRequestDto
+	if err := c.ShouldBindJSON(&dto); err != nil {
+		res := responses.Failure[any](http.StatusBadRequest, err.Error())
+		c.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := auth.service.Login(dto)
+	c.JSON(utils.ToHTTPStatus(res.Status), res)
+}
+
+func (auth *authController) signup(c *gin.Context) {
+	var dto dtos.AuthSignupRequestDto
+
+	if !utils.ValidationhouldBind(http.StatusBadRequest, &dto, trans, c) {
+		return
+	}
+
+	res := auth.service.Signup(dto)
+	c.JSON(utils.ToHTTPStatus(res.Status), res)
+}
