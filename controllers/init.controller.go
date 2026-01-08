@@ -28,6 +28,7 @@ func InitController(router *gin.Engine) {
 
 	authorize := router.Group("/api")
 	authorize.Use(middlewares.JwtMiddleware())
+	authorize.Use(middlewares.RBACMiddleware())
 	newUserController().registerRoutes(authorize)
 
 	authorize.GET("/current", func(c *gin.Context) {

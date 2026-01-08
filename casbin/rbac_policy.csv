@@ -1,0 +1,8 @@
+# Policies
+
+# Admin 
+p, admin, /api/users, (GET)|(PUT)|(PATCH)|(POST)|(DELETE)
+p, admin, /api/users/*, (GET)|(PUT)|(PATCH)|(POST)|(DELETE)
+
+# Candidate
+p, candidate, /api/current, (GET)

@@ -4,4 +4,5 @@ func InitConfig() {
 	configLoadEnv()
 	configJwtKey()
 	configDatabaseConnection()
+	configCasbinEnforcer()
 }

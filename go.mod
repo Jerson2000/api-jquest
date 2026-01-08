@@ -13,6 +13,12 @@ require (
 )
 
 require (
+	github.com/bmatcuk/doublestar/v4 v4.9.1 // indirect
+	github.com/casbin/casbin/v3 v3.8.2 // indirect
+	github.com/casbin/govaluate v1.10.0 // indirect
+)
+
+require (
 	github.com/bytedance/gopkg v0.1.3 // indirect
 	github.com/bytedance/sonic v1.14.2 // indirect
 	github.com/bytedance/sonic/loader v0.4.0 // indirect
