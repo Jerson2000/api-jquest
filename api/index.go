@@ -7,13 +7,19 @@ import (
 	"github.com/jerson2000/jquest/controllers"
 )
 
-func Handler(w http.ResponseWriter, r *http.Request) {
-	router := gin.Default()
-	router.GET("/", func(c *gin.Context) {
+var app *gin.Engine
+
+func init() {
+	app = gin.New()
+	app.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
-			"message": "Hello from Gin on Vercel! (Working version)",
+			"message": "Hello!",
 		})
 	})
-	controllers.InitController(router)
-	router.ServeHTTP(w, r)
+	controllers.InitController(app)
+
+}
+
+func Handler(w http.ResponseWriter, r *http.Request) {
+	app.ServeHTTP(w, r)
 }
