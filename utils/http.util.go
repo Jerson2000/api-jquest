@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
-	"github.com/jerson2000/jquest/internal/responses"
+	"github.com/jerson2000/jquest/responses"
 )
 
 func ToHTTPStatus(status int) int {

@@ -12,9 +12,9 @@ import (
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	en_translations "github.com/go-playground/validator/v10/translations/en"
-	"github.com/jerson2000/jquest/internal/config"
-	"github.com/jerson2000/jquest/internal/enums"
-	"github.com/jerson2000/jquest/internal/middlewares"
+	"github.com/jerson2000/jquest/config"
+	"github.com/jerson2000/jquest/enums"
+	"github.com/jerson2000/jquest/middlewares"
 )
 
 var trans ut.Translator

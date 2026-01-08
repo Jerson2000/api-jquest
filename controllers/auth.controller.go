@@ -4,10 +4,10 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jerson2000/jquest/internal/dtos"
-	"github.com/jerson2000/jquest/internal/responses"
-	"github.com/jerson2000/jquest/internal/services"
-	"github.com/jerson2000/jquest/internal/utils"
+	"github.com/jerson2000/jquest/dtos"
+	"github.com/jerson2000/jquest/responses"
+	"github.com/jerson2000/jquest/services"
+	"github.com/jerson2000/jquest/utils"
 )
 
 type authController struct {

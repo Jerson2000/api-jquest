@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/jerson2000/jquest/internal/models"
+	"github.com/jerson2000/jquest/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

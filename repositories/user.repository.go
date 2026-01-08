@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"github.com/jerson2000/jquest/internal/models"
+	"github.com/jerson2000/jquest/models"
 	"gorm.io/gorm"
 )
 

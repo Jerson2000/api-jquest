@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jerson2000/jquest/internal/controllers"
+	"github.com/jerson2000/jquest/controllers"
 )
 
 func Handler(w http.ResponseWriter, r *http.Request) {

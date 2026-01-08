@@ -3,8 +3,8 @@ package models
 import (
 	"time"
 
-	"github.com/jerson2000/jquest/internal/dtos"
-	"github.com/jerson2000/jquest/internal/enums"
+	"github.com/jerson2000/jquest/dtos"
+	"github.com/jerson2000/jquest/enums"
 )
 
 type User struct {

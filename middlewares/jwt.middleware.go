@@ -6,8 +6,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/jerson2000/jquest/internal/config"
-	"github.com/jerson2000/jquest/internal/models"
+	"github.com/jerson2000/jquest/config"
+	"github.com/jerson2000/jquest/models"
+	"github.com/jerson2000/jquest/responses"
 )
 
 func JwtMiddleware() gin.HandlerFunc {
@@ -15,7 +16,8 @@ func JwtMiddleware() gin.HandlerFunc {
 		authHeader := c.GetHeader("Authorization")
 
 		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "You don't have permission to access this resource!"})
+			res := responses.Failure[any](http.StatusUnauthorized, "You don't have permission to access this resource!")
+			c.JSON(http.StatusUnauthorized, res)
 			c.Abort()
 			return
 		}
@@ -26,7 +28,8 @@ func JwtMiddleware() gin.HandlerFunc {
 		})
 
 		if err != nil || !token.Valid {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+			res := responses.Failure[any](http.StatusUnauthorized, "invalid token")
+			c.JSON(http.StatusUnauthorized, res)
 			c.Abort()
 			return
 		}
@@ -37,7 +40,8 @@ func JwtMiddleware() gin.HandlerFunc {
 			c.Set("role", claims.Role)
 			c.Next()
 		} else {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token claims"})
+			res := responses.Failure[any](http.StatusUnauthorized, "invalid token claims")
+			c.JSON(http.StatusUnauthorized, res)
 			c.Abort()
 		}
 	}

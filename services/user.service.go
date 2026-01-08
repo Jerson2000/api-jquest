@@ -4,11 +4,11 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/jerson2000/jquest/internal/config"
-	"github.com/jerson2000/jquest/internal/dtos"
-	"github.com/jerson2000/jquest/internal/models"
-	"github.com/jerson2000/jquest/internal/repositories"
-	"github.com/jerson2000/jquest/internal/responses"
+	"github.com/jerson2000/jquest/config"
+	"github.com/jerson2000/jquest/dtos"
+	"github.com/jerson2000/jquest/models"
+	"github.com/jerson2000/jquest/repositories"
+	"github.com/jerson2000/jquest/responses"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )

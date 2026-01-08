@@ -3,7 +3,7 @@ package dtos
 import (
 	"time"
 
-	"github.com/jerson2000/jquest/internal/enums"
+	"github.com/jerson2000/jquest/enums"
 )
 
 type UserCreateRequestDto struct {
