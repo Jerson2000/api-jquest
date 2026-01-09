@@ -5,4 +5,5 @@ func InitConfig() {
 	configJwtKey()
 	configDatabaseConnection()
 	configCasbinEnforcer()
+	configRedisClient()
 }

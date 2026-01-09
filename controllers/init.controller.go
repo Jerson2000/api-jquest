@@ -21,6 +21,8 @@ var trans ut.Translator
 func InitController(router *gin.Engine) {
 	initValidator()
 
+	rateLimit := middlewares.NewRateLimiter("50-M")
+	router.Use(rateLimit.Middleware())
 	router.Use(cors.Default())
 
 	public := router.Group("/api")
