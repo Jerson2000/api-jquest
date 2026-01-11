@@ -12,8 +12,10 @@ import (
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	en_translations "github.com/go-playground/validator/v10/translations/en"
+	"github.com/jerson2000/jquest/config"
 	"github.com/jerson2000/jquest/enums"
 	"github.com/jerson2000/jquest/middlewares"
+	"github.com/jerson2000/jquest/responses"
 )
 
 var trans ut.Translator
@@ -24,6 +26,17 @@ func InitController(router *gin.Engine) {
 	rateLimit := middlewares.NewRateLimiter("50-M")
 	router.Use(rateLimit.Middleware())
 	router.Use(cors.Default())
+	router.Use(middlewares.CSRFMiddleware(
+		config.CSRFKey,
+		false,
+	))
+
+	router.GET("/api/token", func(c *gin.Context) {
+		xtoken, _ := c.Get("csrf_token")
+		c.Header("X-CSRF-Token", xtoken.(string))
+		res := responses.Success[any](http.StatusOK, gin.H{"token": xtoken})
+		c.JSON(http.StatusOK, res)
+	})
 
 	public := router.Group("/api")
 	newAuthController().registerRoutes(public)

@@ -6,4 +6,5 @@ func InitConfig() {
 	configDatabaseConnection()
 	configCasbinEnforcer()
 	configRedisClient()
+	configCSRF()
 }
