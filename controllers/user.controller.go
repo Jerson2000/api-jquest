@@ -3,8 +3,11 @@ package controllers
 import (
 	"net/http"
 	"strconv"
+	"time"
 
+	"github.com/gin-contrib/cache"
 	"github.com/gin-gonic/gin"
+	"github.com/jerson2000/jquest/config"
 	"github.com/jerson2000/jquest/dtos"
 	"github.com/jerson2000/jquest/responses"
 	"github.com/jerson2000/jquest/services"
@@ -23,8 +26,8 @@ func newUserController() *userController {
 func (h *userController) registerRoutes(r *gin.RouterGroup) {
 	users := r.Group("/users")
 	{
-		users.GET("", h.getUsers)
-		users.GET("/:id", h.getUserByID)
+		users.GET("", cache.CachePage(config.CacheStore, time.Minute, h.getUsers))
+		users.GET("/:id", cache.CachePage(config.CacheStore, time.Minute, h.getUserByID))
 		users.POST("", h.createUser)
 		users.PUT("/:id", h.updateUser)
 		users.DELETE("/:id", h.deleteUser)

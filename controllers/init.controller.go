@@ -28,7 +28,7 @@ func InitController(router *gin.Engine) {
 	router.Use(cors.Default())
 	router.Use(middlewares.CSRFMiddleware(
 		config.CSRFKey,
-		false,
+		true,
 	))
 
 	router.GET("/api/token", func(c *gin.Context) {

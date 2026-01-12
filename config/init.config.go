@@ -7,4 +7,5 @@ func InitConfig() {
 	configCasbinEnforcer()
 	configRedisClient()
 	configCSRF()
+	configInitCacheStore()
 }
