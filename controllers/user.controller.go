@@ -43,7 +43,7 @@ func (h *userController) getUserByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		c.JSON(http.StatusBadRequest, responses.Failure[any](http.StatusBadRequest, "invalid id"))
 		return
 	}
 
@@ -52,13 +52,12 @@ func (h *userController) getUserByID(c *gin.Context) {
 }
 
 func (h *userController) createUser(c *gin.Context) {
-	var user dtos.UserCreateRequestDto
-	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	var dto dtos.UserCreateRequestDto
+	if !utils.ValidationhouldBind(http.StatusBadRequest, &dto, trans, c) {
 		return
 	}
 
-	created := h.service.CreateUser(user)
+	created := h.service.CreateUser(dto)
 	c.JSON(utils.ToHTTPStatus(created.Status), created)
 }
 
@@ -66,17 +65,16 @@ func (h *userController) updateUser(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid ID"})
+		c.JSON(http.StatusBadRequest, responses.Failure[any](http.StatusBadRequest, "invalid id"))
 		return
 	}
 
-	var user dtos.UserUpdateRequestDto
-	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	var dto dtos.UserUpdateRequestDto
+	if !utils.ValidationhouldBind(http.StatusBadRequest, &dto, trans, c) {
 		return
 	}
 
-	updated := h.service.UpdateUser(id, user)
+	updated := h.service.UpdateUser(id, dto)
 
 	c.JSON(utils.ToHTTPStatus(updated.Status), updated)
 }
