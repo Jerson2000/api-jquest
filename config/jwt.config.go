@@ -10,8 +10,9 @@ var (
 )
 
 func configJwtKey() {
-	JWTKey := []byte(os.Getenv("JWT_SECRET"))
-	if len(JWTKey) == 0 {
-		log.Println("env jwt secret is not set", JWTKey)
+	var tempKey string
+	if tempKey = os.Getenv("JWT_SECRET"); tempKey == "" {
+		log.Println("env jwt secret is not set")
 	}
+	JWTKey = []byte(tempKey)
 }

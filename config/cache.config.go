@@ -28,7 +28,7 @@ func configInitCacheStore() {
 			log.Println("WARN: failed to init Redis cache — falling back to in-memory")
 		}
 
-		CacheStore = persistence.NewInMemoryStore(time.Second)
+		CacheStore = persistence.NewInMemoryStore(time.Minute)
 		log.Println("INFO: using in-memory cache store")
 	})
 }
