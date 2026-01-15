@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jerson2000/jquest/dtos"
-	"github.com/jerson2000/jquest/responses"
+	"github.com/jerson2000/jquest/middlewares"
 	"github.com/jerson2000/jquest/services"
 	"github.com/jerson2000/jquest/utils"
 )
@@ -24,14 +24,13 @@ func (auth *authController) registerRoutes(r *gin.RouterGroup) {
 	{
 		routes.POST("login", auth.login)
 		routes.POST("signup", auth.signup)
+		routes.POST("refresh", middlewares.JwtMiddleware(), auth.refresh)
 	}
 }
 
 func (auth *authController) login(c *gin.Context) {
 	var dto dtos.AuthLoginRequestDto
-	if err := c.ShouldBindJSON(&dto); err != nil {
-		res := responses.Failure[any](http.StatusBadRequest, err.Error())
-		c.JSON(http.StatusBadRequest, res)
+	if !utils.ValidationhouldBind(http.StatusBadRequest, &dto, trans, c) {
 		return
 	}
 
@@ -47,5 +46,15 @@ func (auth *authController) signup(c *gin.Context) {
 	}
 
 	res := auth.service.Signup(dto)
+	c.JSON(utils.ToHTTPStatus(res.Status), res)
+}
+
+func (auth *authController) refresh(c *gin.Context) {
+	var dto dtos.AuthRefreshRequestDto
+	if !utils.ValidationhouldBind(http.StatusBadRequest, &dto, trans, c) {
+		return
+	}
+
+	res := auth.service.Refresh(dto)
 	c.JSON(utils.ToHTTPStatus(res.Status), res)
 }

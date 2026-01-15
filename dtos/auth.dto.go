@@ -11,6 +11,11 @@ type AuthSignupRequestDto struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type AuthRefreshRequestDto struct {
+	RefreshToken string `json:"refreshToken" binding:"required"`
+}
+
 type AuthResponseDto struct {
-	Token string `json:"token"`
+	Token        string `json:"token"`
+	RefreshToken string `json:"refreshToken"`
 }

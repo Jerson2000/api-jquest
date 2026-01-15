@@ -23,6 +23,11 @@ func JwtMiddleware() gin.HandlerFunc {
 		}
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 
+		if c.FullPath() == "/api/auth/refresh" {
+			c.Next()
+			return
+		}
+
 		token, err := jwt.ParseWithClaims(tokenString, &models.JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
 			return config.JWTKey, nil
 		})
