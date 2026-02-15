@@ -23,6 +23,9 @@ func configDatabaseConnection() {
 
 	Database.AutoMigrate(
 		&models.User{},
+		&models.Company{},
+		&models.Job{},
+		&models.Recruiter{},
 	)
 
 }

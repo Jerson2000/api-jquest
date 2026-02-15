@@ -1,11 +1,25 @@
 package responses
 
+import (
+	"math"
+)
+
 type ResultResponse[T any] struct {
 	Success bool     `json:"success"`
 	Status  int      `json:"status"`
 	Data    *T       `json:"data,omitempty"`
 	Error   *Error   `json:"error,omitempty"`
 	Errors  *[]Error `json:"errors,omitempty"`
+}
+
+type PaginatedResponse[T any] struct {
+	Data       []T   `json:"data"`
+	TotalCount int64 `json:"totalCount"`
+	Page       int   `json:"page"`
+	Limit      int   `json:"limit"`
+	TotalPages int   `json:"totalPages"`
+	HasNext    bool  `json:"hasNext"`
+	HasPrev    bool  `json:"hasPrev"`
 }
 
 type Error struct {
@@ -18,6 +32,23 @@ func Success[T any](status int, data T) ResultResponse[T] {
 		Success: true,
 		Status:  status,
 		Data:    &data,
+	}
+}
+
+func PaginatedSuccess[T any](status int, data []T, count int64, page, limit int) ResultResponse[PaginatedResponse[T]] {
+	totalPages := int(math.Ceil(float64(count) / float64(limit)))
+	return ResultResponse[PaginatedResponse[T]]{
+		Success: true,
+		Status:  status,
+		Data: &PaginatedResponse[T]{
+			Data:       data,
+			TotalCount: count,
+			Page:       page,
+			Limit:      limit,
+			TotalPages: totalPages,
+			HasNext:    page < totalPages,
+			HasPrev:    page > 1,
+		},
 	}
 }
 

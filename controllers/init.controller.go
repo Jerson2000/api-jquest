@@ -30,6 +30,11 @@ func InitController(router *gin.Engine) {
 		config.CSRFKey,
 		true,
 	))
+	router.Use(func(c *gin.Context) {
+		c.Header("Content-Security-Policy", "default-src 'self';")
+		c.Header("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
+		c.Next()
+	})
 
 	router.GET("/api/token", func(c *gin.Context) {
 		xtoken, _ := c.Get("csrf_token")
@@ -45,6 +50,10 @@ func InitController(router *gin.Engine) {
 	authorize.Use(middlewares.JwtMiddleware())
 	authorize.Use(middlewares.RBACMiddleware())
 	newUserController().registerRoutes(authorize)
+	newRecruiterController().registerRoutes(authorize)
+
+	newCompanyController().registerRoutes(public, authorize)
+	newJobController().registerRoutes(public, authorize)
 
 	authorize.GET("/current", func(c *gin.Context) {
 		id := c.MustGet("id").(int)

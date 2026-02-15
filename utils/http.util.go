@@ -31,7 +31,7 @@ func ToHTTPStatus(status int) int {
 	}
 }
 
-func ValidationhouldBind[T any](status int, dto T, trans ut.Translator, c *gin.Context) bool {
+func ValidationShouldBind[T any](status int, dto T, trans ut.Translator, c *gin.Context) bool {
 	if err := c.ShouldBind(&dto); err != nil {
 		var verrs validator.ValidationErrors
 
