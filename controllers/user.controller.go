@@ -35,7 +35,7 @@ func (h *userController) registerRoutes(r *gin.RouterGroup) {
 }
 
 func (h *userController) getUsers(c *gin.Context) {
-	response := h.service.GetUsers()
+	response := h.service.GetUsers(c.Request.Context())
 	c.JSON(utils.ToHTTPStatus(response.Status), response)
 }
 
@@ -47,17 +47,17 @@ func (h *userController) getUserByID(c *gin.Context) {
 		return
 	}
 
-	response := h.service.GetUser(id)
+	response := h.service.GetUser(c.Request.Context(), id)
 	c.JSON(utils.ToHTTPStatus(response.Status), response)
 }
 
 func (h *userController) createUser(c *gin.Context) {
 	var dto dtos.UserCreateRequestDto
-	if !utils.ValidationhouldBind(http.StatusBadRequest, &dto, trans, c) {
+	if !utils.ValidationShouldBind(http.StatusBadRequest, &dto, trans, c) {
 		return
 	}
 
-	created := h.service.CreateUser(dto)
+	created := h.service.CreateUser(c.Request.Context(), dto)
 	c.JSON(utils.ToHTTPStatus(created.Status), created)
 }
 
@@ -70,11 +70,11 @@ func (h *userController) updateUser(c *gin.Context) {
 	}
 
 	var dto dtos.UserUpdateRequestDto
-	if !utils.ValidationhouldBind(http.StatusBadRequest, &dto, trans, c) {
+	if !utils.ValidationShouldBind(http.StatusBadRequest, &dto, trans, c) {
 		return
 	}
 
-	updated := h.service.UpdateUser(id, dto)
+	updated := h.service.UpdateUser(c.Request.Context(), id, dto)
 
 	c.JSON(utils.ToHTTPStatus(updated.Status), updated)
 }
@@ -87,7 +87,7 @@ func (h *userController) deleteUser(c *gin.Context) {
 		return
 	}
 
-	del := h.service.DeleteUser(id)
+	del := h.service.DeleteUser(c.Request.Context(), id)
 	if !del.Success {
 		c.JSON(utils.ToHTTPStatus(del.Status), del)
 		return

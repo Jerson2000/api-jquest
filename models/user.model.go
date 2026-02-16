@@ -19,6 +19,7 @@ type User struct {
 	IsVerified bool       `gorm:"default:false" json:"isVerified"`
 	CreatedAt  time.Time  `json:"created_at"`
 	UpdatedAt  time.Time  `json:"updated_at"`
+	DeletedAt  *time.Time `gorm:"index" json:"deletedAt,omitempty"`
 }
 
 func (u *User) ToUserResponseDto() dtos.UserResponseDto {

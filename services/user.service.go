@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"errors"
 	"net/http"
 
@@ -14,11 +15,11 @@ import (
 )
 
 type UserService interface {
-	GetUsers() responses.ResultResponse[[]dtos.UserResponseDto]
-	GetUser(int) responses.ResultResponse[dtos.UserResponseDto]
-	CreateUser(user dtos.UserCreateRequestDto) responses.ResultResponse[dtos.UserResponseDto]
-	UpdateUser(int, dtos.UserUpdateRequestDto) responses.ResultResponse[dtos.UserResponseDto]
-	DeleteUser(int) responses.ResultResponse[string]
+	GetUsers(ctx context.Context) responses.ResultResponse[[]dtos.UserResponseDto]
+	GetUser(ctx context.Context, id int) responses.ResultResponse[dtos.UserResponseDto]
+	CreateUser(ctx context.Context, user dtos.UserCreateRequestDto) responses.ResultResponse[dtos.UserResponseDto]
+	UpdateUser(ctx context.Context, id int, user dtos.UserUpdateRequestDto) responses.ResultResponse[dtos.UserResponseDto]
+	DeleteUser(ctx context.Context, id int) responses.ResultResponse[string]
 }
 
 type userService struct {
@@ -30,8 +31,8 @@ func NewUserService() UserService {
 	return &userService{repo}
 }
 
-func (s *userService) GetUsers() responses.ResultResponse[[]dtos.UserResponseDto] {
-	users, err := s.repo.GetAll()
+func (s *userService) GetUsers(ctx context.Context) responses.ResultResponse[[]dtos.UserResponseDto] {
+	users, err := s.repo.GetAll(ctx)
 	if err != nil {
 		return responses.Failure[[]dtos.UserResponseDto](
 			http.StatusInternalServerError,
@@ -44,8 +45,8 @@ func (s *userService) GetUsers() responses.ResultResponse[[]dtos.UserResponseDto
 	return responses.Success(int(http.StatusOK), dtoList)
 }
 
-func (s *userService) GetUser(id int) responses.ResultResponse[dtos.UserResponseDto] {
-	user, err := s.repo.GetByID(id)
+func (s *userService) GetUser(ctx context.Context, id int) responses.ResultResponse[dtos.UserResponseDto] {
+	user, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -62,7 +63,7 @@ func (s *userService) GetUser(id int) responses.ResultResponse[dtos.UserResponse
 	return responses.Success(int(http.StatusOK), user.ToUserResponseDto())
 }
 
-func (s *userService) CreateUser(user dtos.UserCreateRequestDto) responses.ResultResponse[dtos.UserResponseDto] {
+func (s *userService) CreateUser(ctx context.Context, user dtos.UserCreateRequestDto) responses.ResultResponse[dtos.UserResponseDto] {
 
 	newUser := models.User{
 		Name:     user.Name,
@@ -72,7 +73,7 @@ func (s *userService) CreateUser(user dtos.UserCreateRequestDto) responses.Resul
 		Phone:    user.Phone,
 	}
 
-	if existing, _ := s.repo.GetByEmail(user.Email); existing.Id != 0 {
+	if existing, _ := s.repo.GetByEmail(ctx, user.Email); existing.Id != 0 {
 		return responses.Failure[dtos.UserResponseDto](
 			http.StatusBadRequest,
 			"email already in use",
@@ -88,7 +89,7 @@ func (s *userService) CreateUser(user dtos.UserCreateRequestDto) responses.Resul
 	}
 	newUser.Password = string(hashed)
 
-	createdUser, err := s.repo.Create(newUser)
+	createdUser, err := s.repo.Create(ctx, newUser)
 	if err != nil {
 		return responses.Failure[dtos.UserResponseDto](
 			http.StatusInternalServerError,
@@ -99,8 +100,8 @@ func (s *userService) CreateUser(user dtos.UserCreateRequestDto) responses.Resul
 	return responses.Success(int(http.StatusOK), createdUser.ToUserResponseDto())
 }
 
-func (s *userService) UpdateUser(id int, user dtos.UserUpdateRequestDto) responses.ResultResponse[dtos.UserResponseDto] {
-	existing, err := s.repo.GetByID(id)
+func (s *userService) UpdateUser(ctx context.Context, id int, user dtos.UserUpdateRequestDto) responses.ResultResponse[dtos.UserResponseDto] {
+	existing, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		return responses.Failure[dtos.UserResponseDto](
 			http.StatusNotFound,
@@ -109,7 +110,7 @@ func (s *userService) UpdateUser(id int, user dtos.UserUpdateRequestDto) respons
 	}
 
 	if user.Email != "" && user.Email != existing.Email {
-		if other, _ := s.repo.GetByEmail(user.Email); other.Id != 0 && other.Id != id {
+		if other, _ := s.repo.GetByEmail(ctx, user.Email); other.Id != 0 && other.Id != id {
 			return responses.Failure[dtos.UserResponseDto](
 				http.StatusBadRequest,
 				"email already in use",
@@ -124,7 +125,7 @@ func (s *userService) UpdateUser(id int, user dtos.UserUpdateRequestDto) respons
 	existing.Phone = user.Phone
 	existing.Sex = user.Sex
 
-	updated, err := s.repo.Update(id, existing)
+	updated, err := s.repo.Update(ctx, id, existing)
 	if err != nil {
 		return responses.Failure[dtos.UserResponseDto](
 			http.StatusInternalServerError,
@@ -135,8 +136,8 @@ func (s *userService) UpdateUser(id int, user dtos.UserUpdateRequestDto) respons
 	return responses.Success(int(http.StatusOK), updated.ToUserResponseDto())
 }
 
-func (s *userService) DeleteUser(id int) responses.ResultResponse[string] {
-	err := s.repo.Delete(id)
+func (s *userService) DeleteUser(ctx context.Context, id int) responses.ResultResponse[string] {
+	err := s.repo.Delete(ctx, id)
 	if err != nil {
 		return responses.Failure[string](
 			http.StatusInternalServerError,

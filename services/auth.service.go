@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -19,9 +20,9 @@ import (
 )
 
 type AuthService interface {
-	Login(dto dtos.AuthLoginRequestDto) responses.ResultResponse[dtos.AuthResponseDto]
-	Signup(dto dtos.AuthSignupRequestDto) responses.ResultResponse[dtos.AuthResponseDto]
-	Refresh(dto dtos.AuthRefreshRequestDto) responses.ResultResponse[dtos.AuthResponseDto]
+	Login(ctx context.Context, dto dtos.AuthLoginRequestDto) responses.ResultResponse[dtos.AuthResponseDto]
+	Signup(ctx context.Context, dto dtos.AuthSignupRequestDto) responses.ResultResponse[dtos.AuthResponseDto]
+	Refresh(ctx context.Context, dto dtos.AuthRefreshRequestDto) responses.ResultResponse[dtos.AuthResponseDto]
 }
 
 type authService struct {
@@ -36,8 +37,8 @@ func NewAuthService() AuthService {
 	}
 }
 
-func (a authService) Login(dto dtos.AuthLoginRequestDto) responses.ResultResponse[dtos.AuthResponseDto] {
-	isUserExist, err := a.userRepo.GetByEmail(dto.Email)
+func (a authService) Login(ctx context.Context, dto dtos.AuthLoginRequestDto) responses.ResultResponse[dtos.AuthResponseDto] {
+	isUserExist, err := a.userRepo.GetByEmail(ctx, dto.Email)
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -76,7 +77,7 @@ func (a authService) Login(dto dtos.AuthLoginRequestDto) responses.ResultRespons
 	})
 }
 
-func (a authService) Signup(dto dtos.AuthSignupRequestDto) responses.ResultResponse[dtos.AuthResponseDto] {
+func (a authService) Signup(ctx context.Context, dto dtos.AuthSignupRequestDto) responses.ResultResponse[dtos.AuthResponseDto] {
 
 	newUser := models.User{
 		Name:     dto.Name,
@@ -84,7 +85,7 @@ func (a authService) Signup(dto dtos.AuthSignupRequestDto) responses.ResultRespo
 		Password: dto.Password,
 	}
 
-	if existing, _ := a.userRepo.GetByEmail(dto.Email); existing.Id != 0 {
+	if existing, _ := a.userRepo.GetByEmail(ctx, dto.Email); existing.Id != 0 {
 		return responses.Failure[dtos.AuthResponseDto](
 			http.StatusBadRequest,
 			"email already in use",
@@ -99,7 +100,7 @@ func (a authService) Signup(dto dtos.AuthSignupRequestDto) responses.ResultRespo
 		)
 	}
 	newUser.Password = string(hashed)
-	createdUser, err := a.userRepo.Create(newUser)
+	createdUser, err := a.userRepo.Create(ctx, newUser)
 	if err != nil {
 		return responses.Failure[dtos.AuthResponseDto](
 			http.StatusInternalServerError,
@@ -115,7 +116,7 @@ func (a authService) Signup(dto dtos.AuthSignupRequestDto) responses.ResultRespo
 	})
 }
 
-func (a authService) Refresh(dto dtos.AuthRefreshRequestDto) responses.ResultResponse[dtos.AuthResponseDto] {
+func (a authService) Refresh(ctx context.Context, dto dtos.AuthRefreshRequestDto) responses.ResultResponse[dtos.AuthResponseDto] {
 	token, err := jwt.ParseWithClaims(dto.RefreshToken, &models.JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return config.JWTKey, nil
 	})
@@ -147,7 +148,7 @@ func (a authService) Refresh(dto dtos.AuthRefreshRequestDto) responses.ResultRes
 		)
 	}
 
-	user, err := a.userRepo.GetByID(claims.Id)
+	user, err := a.userRepo.GetByID(ctx, claims.Id)
 	if err != nil {
 		return responses.Failure[dtos.AuthResponseDto](
 			http.StatusUnauthorized,
