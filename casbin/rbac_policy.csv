@@ -15,9 +15,13 @@ p, candidate, /api/current, (GET)
 p, candidate, /api/jobs, (GET)
 p, candidate, /api/jobs/*, (GET)
 p, candidate, /api/jobs/apply, (POST)
+p, candidate, /api/applications, (POST)
+p, candidate, /api/applications/my, (GET)
 
 # Recruiter
 p, recruiter, /api/current, (GET)
 p, recruiter, /api/companies, (POST)
 p, recruiter, /api/jobs, (POST)
 p, recruiter, /api/jobs/*, (GET)|(PUT)|(PATCH)|(POST)|(DELETE)
+p, recruiter, /api/applications/job/:jobId, (GET)
+p, recruiter, /api/applications/:id/status, (PATCH)
