@@ -54,6 +54,7 @@ func InitController(router *gin.Engine) {
 
 	newCompanyController().registerRoutes(public, authorize)
 	newJobController().registerRoutes(public, authorize)
+	newApplicationController().registerRoutes(public, authorize)
 
 	authorize.GET("/current", func(c *gin.Context) {
 		id := c.MustGet("id").(int)

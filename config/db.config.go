@@ -26,6 +26,9 @@ func configDatabaseConnection() {
 		&models.Company{},
 		&models.Job{},
 		&models.Recruiter{},
+		&models.Candidate{},
+		&models.Application{},
+		&models.Experience{},
 	)
 
 }
