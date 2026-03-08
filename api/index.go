@@ -14,6 +14,7 @@ func init() {
 	gin.SetMode(gin.ReleaseMode)
 	config.InitConfig()
 	app = gin.New()
+	app.Use(gin.Recovery())
 	app.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Hello!",

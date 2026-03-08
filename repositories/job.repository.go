@@ -11,7 +11,7 @@ type JobRepository interface {
 	Create(context.Context, models.Job) (models.Job, error)
 	GetByID(context.Context, int) (models.Job, error)
 	GetAll(context.Context, int, int) ([]models.Job, int64, error)
-	GetByCompanyID(context.Context, int) ([]models.Job, error)
+	GetByCompanyID(ctx context.Context, companyId int, page int, limit int) ([]models.Job, int64, error)
 	Update(context.Context, int, models.Job) (models.Job, error)
 	Delete(context.Context, int) error
 }
@@ -51,10 +51,17 @@ func (r *jobRepo) GetAll(ctx context.Context, page, limit int) ([]models.Job, in
 	return jobs, count, err
 }
 
-func (r *jobRepo) GetByCompanyID(ctx context.Context, companyId int) ([]models.Job, error) {
+func (r *jobRepo) GetByCompanyID(ctx context.Context, companyId int, page int, limit int) ([]models.Job, int64, error) {
 	var jobs []models.Job
-	err := r.db.WithContext(ctx).Find(&jobs, "company_id = ?", companyId).Error
-	return jobs, err
+	var count int64
+
+	if err := r.db.WithContext(ctx).Model(&models.Job{}).Where("company_id = ?", companyId).Count(&count).Error; err != nil {
+		return nil, 0, err
+	}
+
+	offset := (page - 1) * limit
+	err := r.db.WithContext(ctx).Where("company_id = ?", companyId).Offset(offset).Limit(limit).Find(&jobs).Error
+	return jobs, count, err
 }
 
 func (r *jobRepo) Update(ctx context.Context, id int, job models.Job) (models.Job, error) {

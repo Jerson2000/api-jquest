@@ -9,6 +9,8 @@ p, admin, /api/jobs, (GET)|(PUT)|(PATCH)|(POST)|(DELETE)
 p, admin, /api/jobs/*, (GET)|(PUT)|(PATCH)|(POST)|(DELETE)
 p, admin, /api/recruiters, (GET)|(PUT)|(PATCH)|(POST)|(DELETE)
 p, admin, /api/recruiters/*, (GET)|(PUT)|(PATCH)|(POST)|(DELETE)
+p, admin, /api/applications, (GET)|(PUT)|(PATCH)|(POST)|(DELETE)
+p, admin, /api/applications/*, (GET)|(PUT)|(PATCH)|(POST)|(DELETE)
 
 # Candidate
 p, candidate, /api/current, (GET)

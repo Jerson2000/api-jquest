@@ -3,6 +3,7 @@ package config
 import (
 	"log"
 	"os"
+	"time"
 
 	"github.com/jerson2000/jquest/models"
 	"gorm.io/driver/postgres"
@@ -19,6 +20,15 @@ func configDatabaseConnection() {
 
 	if err != nil {
 		log.Println(err)
+	}
+
+	sqlDB, err := Database.DB()
+	if err == nil {
+		sqlDB.SetMaxIdleConns(10)
+		sqlDB.SetMaxOpenConns(100)
+		sqlDB.SetConnMaxLifetime(time.Hour)
+	} else {
+		log.Println("Failed to configure database connection pool:", err)
 	}
 
 	Database.AutoMigrate(

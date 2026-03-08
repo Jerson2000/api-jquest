@@ -32,9 +32,9 @@ func (m *MockJobRepo) GetAll(ctx context.Context, page, limit int) ([]models.Job
 	return args.Get(0).([]models.Job), args.Get(1).(int64), args.Error(2)
 }
 
-func (m *MockJobRepo) GetByCompanyID(ctx context.Context, companyId int) ([]models.Job, error) {
-	args := m.Called(ctx, companyId)
-	return args.Get(0).([]models.Job), args.Error(1)
+func (m *MockJobRepo) GetByCompanyID(ctx context.Context, companyId int, page int, limit int) ([]models.Job, int64, error) {
+	args := m.Called(ctx, companyId, page, limit)
+	return args.Get(0).([]models.Job), args.Get(1).(int64), args.Error(2)
 }
 
 func (m *MockJobRepo) Update(ctx context.Context, id int, job models.Job) (models.Job, error) {
