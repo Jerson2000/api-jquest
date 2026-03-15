@@ -24,6 +24,12 @@ func JwtMiddleware() gin.HandlerFunc {
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 
 		if c.FullPath() == "/api/auth/refresh" {
+			if !isJwtFormat(tokenString) {
+				res := responses.Failure[any](http.StatusUnauthorized, "invalid token format")
+				c.JSON(http.StatusUnauthorized, res)
+				c.Abort()
+				return
+			}
 			c.Next()
 			return
 		}
@@ -50,4 +56,9 @@ func JwtMiddleware() gin.HandlerFunc {
 			c.Abort()
 		}
 	}
+}
+
+func isJwtFormat(token string) bool {
+	parts := strings.Split(token, ".")
+	return len(parts) == 3
 }

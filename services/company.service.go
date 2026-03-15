@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"errors"
 	"net/http"
 
 	"github.com/jerson2000/jquest/config"
@@ -37,11 +36,20 @@ func NewCompanyService() CompanyService {
 
 func (s *companyService) CreateCompany(ctx context.Context, userId int, dto dtos.CompanyCreateRequestDto) responses.ResultResponse[dtos.CompanyResponseDto] {
 	company := models.Company{
-		Name:        dto.Name,
-		Industry:    dto.Industry,
-		Website:     *dto.Website,
-		Location:    *dto.Location,
-		CompanySize: *dto.CompanySize,
+		Name:     dto.Name,
+		Industry: dto.Industry,
+	}
+
+	if dto.Website != nil {
+		company.Website = *dto.Website
+	}
+
+	if dto.Location != nil {
+		company.Location = *dto.Location
+	}
+
+	if dto.CompanySize != nil {
+		company.CompanySize = *dto.CompanySize
 	}
 
 	newCompany, err := s.companyRepo.Create(ctx, company)
@@ -77,9 +85,15 @@ func (s *companyService) UpdateCompany(ctx context.Context, id int, dto dtos.Com
 
 	company.Name = dto.Name
 	company.Industry = dto.Industry
-	company.Website = *dto.Website
-	company.Location = *dto.Location
-	company.CompanySize = *dto.CompanySize
+	if dto.Website != nil {
+		company.Website = *dto.Website
+	}
+	if dto.Location != nil {
+		company.Location = *dto.Location
+	}
+	if dto.CompanySize != nil {
+		company.CompanySize = *dto.CompanySize
+	}
 
 	updatedCompany, err := s.companyRepo.Update(ctx, id, company)
 	if err != nil {
@@ -98,46 +112,62 @@ func (s *companyService) DeleteCompany(ctx context.Context, id int) responses.Re
 }
 
 func (s *companyService) ApplyAsRecruiter(ctx context.Context, companyDto dtos.CompanyApplyRequestDto) responses.ResultResponse[dtos.CompanyResponseDto] {
+	var createdCompany models.Company
+	err := config.Database.Transaction(func(tx *gorm.DB) error {
+		userRepo := repositories.NewUserRepository(tx)
+		companyRepo := repositories.NewCompanyRepository(tx)
+		recruiterRepo := repositories.NewRecruiterRepository(tx)
 
-	newUser := models.User{
-		Name:     companyDto.User.Name,
-		Email:    companyDto.User.Email,
-		Password: companyDto.User.Password,
-		Sex:      companyDto.User.Sex,
-		Phone:    companyDto.User.Phone,
-		Role:     enums.RECRUITER,
-	}
-	hashed, err := bcrypt.GenerateFromPassword([]byte(companyDto.User.Password), bcrypt.DefaultCost)
-	if err != nil {
-		return responses.Failure[dtos.CompanyResponseDto](
-			http.StatusInternalServerError,
-			err.Error(),
-		)
-	}
-	newUser.Password = string(hashed)
-	user, err := s.userRepo.Create(ctx, newUser)
-
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return responses.Failure[dtos.CompanyResponseDto](
-				http.StatusBadRequest,
-				"user not found",
-			)
+		newUser := models.User{
+			Name:     companyDto.User.Name,
+			Email:    companyDto.User.Email,
+			Password: companyDto.User.Password,
+			Sex:      companyDto.User.Sex,
+			Phone:    companyDto.User.Phone,
+			Role:     enums.RECRUITER,
 		}
-		return responses.Failure[dtos.CompanyResponseDto](
-			http.StatusInternalServerError,
-			err.Error(),
-		)
-	}
+		hashed, err := bcrypt.GenerateFromPassword([]byte(companyDto.User.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return err
+		}
+		newUser.Password = string(hashed)
+		user, err := userRepo.Create(ctx, newUser)
+		if err != nil {
+			return err
+		}
 
-	newCompany := models.Company{
-		Name:        companyDto.Company.Name,
-		Industry:    companyDto.Company.Industry,
-		Website:     *companyDto.Company.Website,
-		Location:    *companyDto.Company.Location,
-		CompanySize: *companyDto.Company.CompanySize,
-	}
-	company, err := s.companyRepo.Create(ctx, newCompany)
+		newCompany := models.Company{
+			Name:     companyDto.Company.Name,
+			Industry: companyDto.Company.Industry,
+		}
+		if companyDto.Company.Website != nil {
+			newCompany.Website = *companyDto.Company.Website
+		}
+		if companyDto.Company.Location != nil {
+			newCompany.Location = *companyDto.Company.Location
+		}
+		if companyDto.Company.CompanySize != nil {
+			newCompany.CompanySize = *companyDto.Company.CompanySize
+		}
+
+		company, err := companyRepo.Create(ctx, newCompany)
+		if err != nil {
+			return err
+		}
+
+		recruiter := models.Recruiter{
+			UserId:     user.Id,
+			CompanyId:  company.Id,
+			Position:   "Recruiter",
+			IsVerified: false,
+		}
+		if _, err := recruiterRepo.Create(ctx, recruiter); err != nil {
+			return err
+		}
+
+		createdCompany = company
+		return nil
+	})
 
 	if err != nil {
 		return responses.Failure[dtos.CompanyResponseDto](
@@ -146,20 +176,5 @@ func (s *companyService) ApplyAsRecruiter(ctx context.Context, companyDto dtos.C
 		)
 	}
 
-	recruiter := models.Recruiter{
-		UserId:     user.Id,
-		CompanyId:  company.Id,
-		Position:   "Recruiter",
-		IsVerified: false,
-	}
-	_, err = s.recruiterRepo.Create(ctx, recruiter)
-
-	if err != nil {
-		return responses.Failure[dtos.CompanyResponseDto](
-			http.StatusInternalServerError,
-			err.Error(),
-		)
-	}
-
-	return responses.Success(http.StatusCreated, company.ToCompanyResponseDto())
+	return responses.Success(http.StatusCreated, createdCompany.ToCompanyResponseDto())
 }
