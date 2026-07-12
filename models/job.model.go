@@ -28,9 +28,14 @@ type Job struct {
 
 	Company      Company       `gorm:"foreignKey:CompanyId" json:"company"`
 	Applications []Application `gorm:"foreignKey:JobId" json:"applications"`
+	Skills       []Skill       `gorm:"many2many:job_skills;" json:"skills,omitempty"`
 }
 
 func (j *Job) ToJobResponseDto() dtos.JobResponseDto {
+	skills := make([]string, len(j.Skills))
+	for i, s := range j.Skills {
+		skills[i] = s.Name
+	}
 	return dtos.JobResponseDto{
 		Id:          j.Id,
 		CompanyId:   j.CompanyId,
@@ -45,6 +50,7 @@ func (j *Job) ToJobResponseDto() dtos.JobResponseDto {
 		Deadline:    j.Deadline,
 		Company:     j.Company.ToCompanyResponseDto(),
 		CreatedAt:   j.CreatedAt,
+		Skills:      skills,
 	}
 }
 

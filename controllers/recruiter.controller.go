@@ -15,8 +15,8 @@ type recruiterController struct {
 	service services.RecruiterService
 }
 
-func newRecruiterController() *recruiterController {
-	return &recruiterController{service: services.NewRecruiterService()}
+func newRecruiterController(service services.RecruiterService) *recruiterController {
+	return &recruiterController{service: service}
 }
 
 func (c *recruiterController) registerRoutes(r *gin.RouterGroup) {

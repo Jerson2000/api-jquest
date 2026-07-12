@@ -34,7 +34,7 @@ func (r *jobRepo) Create(ctx context.Context, job models.Job) (models.Job, error
 func (r *jobRepo) GetByID(ctx context.Context, id int) (models.Job, error) {
 	var job models.Job
 
-	err := r.db.WithContext(ctx).Preload("Company").First(&job, "id = ?", id).Error
+	err := r.db.WithContext(ctx).Preload("Company").Preload("Skills").First(&job, "id = ?", id).Error
 	return job, err
 }
 
@@ -47,7 +47,7 @@ func (r *jobRepo) GetAll(ctx context.Context, page, limit int) ([]models.Job, in
 	}
 
 	offset := (page - 1) * limit
-	err := r.db.WithContext(ctx).Preload("Company").Offset(offset).Limit(limit).Find(&jobs).Error
+	err := r.db.WithContext(ctx).Preload("Company").Preload("Skills").Offset(offset).Limit(limit).Find(&jobs).Error
 	return jobs, count, err
 }
 
@@ -60,7 +60,7 @@ func (r *jobRepo) GetByCompanyID(ctx context.Context, companyId int, page int, l
 	}
 
 	offset := (page - 1) * limit
-	err := r.db.WithContext(ctx).Where("company_id = ?", companyId).Offset(offset).Limit(limit).Find(&jobs).Error
+	err := r.db.WithContext(ctx).Preload("Skills").Where("company_id = ?", companyId).Offset(offset).Limit(limit).Find(&jobs).Error
 	return jobs, count, err
 }
 

@@ -37,4 +37,5 @@ type JobResponseDto struct {
 	CreatedAt   time.Time          `json:"createdAt"`
 	UpdatedAt   time.Time          `json:"updatedAt"`
 	DeletedAt   *time.Time         `json:"deletedAt,omitempty"`
+	Skills      []string           `json:"skills,omitempty"`
 }

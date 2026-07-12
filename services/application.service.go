@@ -30,14 +30,19 @@ type applicationService struct {
 	userRepo        repositories.UserRepository
 }
 
-func NewApplicationService() ApplicationService {
-	db := config.Database
+func NewApplicationService(
+	applicationRepo repositories.ApplicationRepository,
+	jobRepo repositories.JobRepository,
+	candidateRepo repositories.CandidateRepository,
+	recruiterRepo repositories.RecruiterRepository,
+	userRepo repositories.UserRepository,
+) ApplicationService {
 	return &applicationService{
-		applicationRepo: repositories.NewApplicationRepository(db),
-		jobRepo:         repositories.NewJobRepository(db),
-		candidateRepo:   repositories.NewCandidateRepository(db),
-		recruiterRepo:   repositories.NewRecruiterRepository(db),
-		userRepo:        repositories.NewUserRepository(db),
+		applicationRepo: applicationRepo,
+		jobRepo:         jobRepo,
+		candidateRepo:   candidateRepo,
+		recruiterRepo:   recruiterRepo,
+		userRepo:        userRepo,
 	}
 }
 
@@ -63,7 +68,6 @@ func (s *applicationService) ApplyJob(ctx context.Context, userId int, dto dtos.
 				UserId:    userId,
 				FirstName: user.Name,
 				LastName:  "", // Placeholder, ideally specific
-				Email:     user.Email,
 			}
 			candidate, err = candidateRepo.Create(ctx, newCandidate)
 			if err != nil {

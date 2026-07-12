@@ -3,9 +3,9 @@ package services
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"net/http"
 
-	"github.com/jerson2000/jquest/config"
 	"github.com/jerson2000/jquest/dtos"
 	"github.com/jerson2000/jquest/models"
 	"github.com/jerson2000/jquest/repositories"
@@ -26,17 +26,17 @@ type userService struct {
 	repo repositories.UserRepository
 }
 
-func NewUserService() UserService {
-	repo := repositories.NewUserRepository(config.Database)
+func NewUserService(repo repositories.UserRepository) UserService {
 	return &userService{repo}
 }
 
 func (s *userService) GetUsers(ctx context.Context) responses.ResultResponse[[]dtos.UserResponseDto] {
 	users, err := s.repo.GetAll(ctx)
 	if err != nil {
+		slog.Error("failed to get all users", "error", err)
 		return responses.Failure[[]dtos.UserResponseDto](
 			http.StatusInternalServerError,
-			err.Error(),
+			"failed to retrieve users",
 		)
 	}
 
@@ -55,9 +55,10 @@ func (s *userService) GetUser(ctx context.Context, id int) responses.ResultRespo
 				"user not found",
 			)
 		}
+		slog.Error("failed to get user by ID", "id", id, "error", err)
 		return responses.Failure[dtos.UserResponseDto](
 			http.StatusInternalServerError,
-			err.Error(),
+			"failed to retrieve user",
 		)
 	}
 	return responses.Success(int(http.StatusOK), user.ToUserResponseDto())
@@ -82,18 +83,20 @@ func (s *userService) CreateUser(ctx context.Context, user dtos.UserCreateReques
 
 	hashed, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
+		slog.Error("failed to hash password during user creation", "error", err)
 		return responses.Failure[dtos.UserResponseDto](
 			http.StatusInternalServerError,
-			err.Error(),
+			"failed to create user",
 		)
 	}
 	newUser.Password = string(hashed)
 
 	createdUser, err := s.repo.Create(ctx, newUser)
 	if err != nil {
+		slog.Error("failed to create user record", "error", err)
 		return responses.Failure[dtos.UserResponseDto](
 			http.StatusInternalServerError,
-			err.Error(),
+			"failed to create user",
 		)
 	}
 
@@ -127,9 +130,10 @@ func (s *userService) UpdateUser(ctx context.Context, id int, user dtos.UserUpda
 
 	updated, err := s.repo.Update(ctx, id, existing)
 	if err != nil {
+		slog.Error("failed to update user record", "id", id, "error", err)
 		return responses.Failure[dtos.UserResponseDto](
 			http.StatusInternalServerError,
-			err.Error(),
+			"failed to update user",
 		)
 	}
 
@@ -139,9 +143,10 @@ func (s *userService) UpdateUser(ctx context.Context, id int, user dtos.UserUpda
 func (s *userService) DeleteUser(ctx context.Context, id int) responses.ResultResponse[string] {
 	err := s.repo.Delete(ctx, id)
 	if err != nil {
+		slog.Error("failed to delete user record", "id", id, "error", err)
 		return responses.Failure[string](
 			http.StatusInternalServerError,
-			err.Error(),
+			"failed to delete user",
 		)
 	}
 	return responses.Success(int(http.StatusNoContent), "")

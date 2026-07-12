@@ -45,6 +45,8 @@ func configDatabaseConnection() error {
 		&models.Candidate{},
 		&models.Application{},
 		&models.Experience{},
+		&models.Skill{},
+		&models.SavedJob{},
 	); err != nil {
 		return fmt.Errorf("database migration failed: %w", err)
 	}

@@ -27,6 +27,7 @@ func (r *candidateRepo) Create(ctx context.Context, candidate models.Candidate) 
 
 func (r *candidateRepo) GetByUserID(ctx context.Context, userId int) (models.Candidate, error) {
 	var candidate models.Candidate
-	err := r.db.WithContext(ctx).Where("user_id = ?", userId).First(&candidate).Error
+	err := r.db.WithContext(ctx).Preload("User").Preload("Skills").Where("user_id = ?", userId).First(&candidate).Error
 	return candidate, err
 }
+

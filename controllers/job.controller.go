@@ -15,8 +15,8 @@ type jobController struct {
 	service services.JobService
 }
 
-func newJobController() *jobController {
-	return &jobController{service: services.NewJobService()}
+func newJobController(service services.JobService) *jobController {
+	return &jobController{service: service}
 }
 
 func (c *jobController) registerRoutes(public *gin.RouterGroup, protected *gin.RouterGroup) {

@@ -8,9 +8,9 @@ import (
 var CSRFKey []byte
 
 func configCSRF() {
-	var tempKey string
-	if tempKey = os.Getenv("CSRF_KEY"); tempKey == "" {
-		log.Println("env csrf key is not set")
+	tempKey := os.Getenv("CSRF_KEY")
+	if tempKey == "" {
+		log.Fatal("FATAL: CSRF_KEY environment variable is not set")
 	}
 	CSRFKey = []byte(tempKey)
 }

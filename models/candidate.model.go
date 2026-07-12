@@ -10,7 +10,6 @@ type Candidate struct {
 	Id              int        `gorm:"primaryKey;autoIncrement" json:"id"`
 	FirstName       string     `gorm:"size:100;not null" json:"firstName"`
 	LastName        string     `gorm:"size:100;not null" json:"lastName"`
-	Email           string     `gorm:"size:150;uniqueIndex;not null" json:"email"`
 	Phone           string     `gorm:"size:30" json:"phone"`
 	LinkedInURL     string     `gorm:"size:255" json:"linkedinUrl"`
 	ResumeURL       string     `gorm:"size:255" json:"resumeUrl"`
@@ -26,19 +25,32 @@ type Candidate struct {
 
 	Experiences  []Experience  `gorm:"foreignKey:CandidateId" json:"experiences"`
 	Applications []Application `gorm:"foreignKey:CandidateId" json:"applications"`
+	Skills       []Skill       `gorm:"many2many:candidate_skills;" json:"skills,omitempty"`
 }
 
 func (c *Candidate) ToCandidateResponseDto() dtos.CandidateResponseDto {
+	email := ""
+	if c.User.Email != "" {
+		email = c.User.Email
+	}
+	
+	skills := make([]string, len(c.Skills))
+	for i, s := range c.Skills {
+		skills[i] = s.Name
+	}
+
 	return dtos.CandidateResponseDto{
 		Id:              c.Id,
 		FirstName:       c.FirstName,
 		LastName:        c.LastName,
-		Email:           c.Email,
+		Email:           email,
 		Phone:           c.Phone,
 		LinkedInURL:     c.LinkedInURL,
 		ResumeURL:       c.ResumeURL,
 		TotalExperience: c.TotalExperience,
 		CurrentTitle:    c.CurrentTitle,
 		CurrentLocation: c.CurrentLocation,
+		Skills:          skills,
 	}
 }
+

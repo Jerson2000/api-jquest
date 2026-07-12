@@ -13,8 +13,8 @@ type companyController struct {
 	service services.CompanyService
 }
 
-func newCompanyController() *companyController {
-	return &companyController{service: services.NewCompanyService()}
+func newCompanyController(service services.CompanyService) *companyController {
+	return &companyController{service: service}
 }
 
 func (c *companyController) registerRoutes(public *gin.RouterGroup, protected *gin.RouterGroup) {

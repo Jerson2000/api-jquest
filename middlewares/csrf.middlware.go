@@ -33,6 +33,12 @@ func CSRFMiddleware(authKey []byte, secure bool) gin.HandlerFunc {
 	)
 
 	return func(c *gin.Context) {
+		// Bypass CSRF checks for client requests utilizing Authorization headers (like Bearer tokens in mobile apps)
+		if c.GetHeader("Authorization") != "" {
+			c.Next()
+			return
+		}
+
 		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			c.Set("csrf_token", csrf.Token(r))
 			c.Next()
@@ -45,3 +51,4 @@ func CSRFMiddleware(authKey []byte, secure bool) gin.HandlerFunc {
 		}
 	}
 }
+

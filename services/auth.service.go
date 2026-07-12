@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -29,11 +30,9 @@ type authService struct {
 	userRepo repositories.UserRepository
 }
 
-func NewAuthService() AuthService {
-	repo := repositories.NewUserRepository(config.Database)
-
+func NewAuthService(userRepo repositories.UserRepository) AuthService {
 	return &authService{
-		userRepo: repo,
+		userRepo: userRepo,
 	}
 }
 
@@ -47,9 +46,10 @@ func (a authService) Login(ctx context.Context, dto dtos.AuthLoginRequestDto) re
 				"incorrect email or password",
 			)
 		}
+		slog.Error("login database query failed", "error", err)
 		return responses.Failure[dtos.AuthResponseDto](
 			http.StatusInternalServerError,
-			err.Error(),
+			"incorrect email or password",
 		)
 	}
 
@@ -65,9 +65,10 @@ func (a authService) Login(ctx context.Context, dto dtos.AuthLoginRequestDto) re
 	token, refreshToken, err := a.generateTokens(isUserExist)
 
 	if err != nil {
+		slog.Error("token generation failed during login", "error", err)
 		return responses.Failure[dtos.AuthResponseDto](
 			http.StatusInternalServerError,
-			err.Error(),
+			"login failed",
 		)
 	}
 
@@ -94,17 +95,19 @@ func (a authService) Signup(ctx context.Context, dto dtos.AuthSignupRequestDto) 
 
 	hashed, err := bcrypt.GenerateFromPassword([]byte(dto.Password), bcrypt.DefaultCost)
 	if err != nil {
+		slog.Error("failed to generate bcrypt hash during signup", "error", err)
 		return responses.Failure[dtos.AuthResponseDto](
 			http.StatusInternalServerError,
-			err.Error(),
+			"registration failed",
 		)
 	}
 	newUser.Password = string(hashed)
 	createdUser, err := a.userRepo.Create(ctx, newUser)
 	if err != nil {
+		slog.Error("failed to create user during signup", "error", err)
 		return responses.Failure[dtos.AuthResponseDto](
 			http.StatusInternalServerError,
-			err.Error(),
+			"registration failed",
 		)
 	}
 
@@ -118,6 +121,9 @@ func (a authService) Signup(ctx context.Context, dto dtos.AuthSignupRequestDto) 
 
 func (a authService) Refresh(ctx context.Context, dto dtos.AuthRefreshRequestDto) responses.ResultResponse[dtos.AuthResponseDto] {
 	token, err := jwt.ParseWithClaims(dto.RefreshToken, &models.JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
 		return config.JWTKey, nil
 	})
 
@@ -158,9 +164,10 @@ func (a authService) Refresh(ctx context.Context, dto dtos.AuthRefreshRequestDto
 
 	newToken, newRefreshToken, err := a.generateTokens(user)
 	if err != nil {
+		slog.Error("failed to generate new tokens during refresh", "error", err)
 		return responses.Failure[dtos.AuthResponseDto](
 			http.StatusInternalServerError,
-			err.Error(),
+			"token refresh failed",
 		)
 	}
 

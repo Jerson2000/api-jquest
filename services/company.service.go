@@ -26,11 +26,11 @@ type companyService struct {
 	userRepo      repositories.UserRepository
 }
 
-func NewCompanyService() CompanyService {
+func NewCompanyService(companyRepo repositories.CompanyRepository, recruiterRepo repositories.RecruiterRepository, userRepo repositories.UserRepository) CompanyService {
 	return &companyService{
-		companyRepo:   repositories.NewCompanyRepository(config.Database),
-		recruiterRepo: repositories.NewRecruiterRepository(config.Database),
-		userRepo:      repositories.NewUserRepository(config.Database),
+		companyRepo:   companyRepo,
+		recruiterRepo: recruiterRepo,
+		userRepo:      userRepo,
 	}
 }
 

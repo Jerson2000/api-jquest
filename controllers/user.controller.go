@@ -18,9 +18,8 @@ type userController struct {
 	service services.UserService
 }
 
-func newUserController() *userController {
-	userService := services.NewUserService()
-	return &userController{service: userService}
+func newUserController(service services.UserService) *userController {
+	return &userController{service: service}
 }
 
 func (h *userController) registerRoutes(r *gin.RouterGroup) {

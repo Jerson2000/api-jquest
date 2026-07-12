@@ -15,8 +15,8 @@ type applicationController struct {
 	service services.ApplicationService
 }
 
-func newApplicationController() *applicationController {
-	return &applicationController{service: services.NewApplicationService()}
+func newApplicationController(service services.ApplicationService) *applicationController {
+	return &applicationController{service: service}
 }
 
 func (c *applicationController) registerRoutes(public *gin.RouterGroup, protected *gin.RouterGroup) {

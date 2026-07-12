@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -23,18 +24,10 @@ func JwtMiddleware() gin.HandlerFunc {
 		}
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 
-		if c.FullPath() == "/api/auth/refresh" {
-			if !isJwtFormat(tokenString) {
-				res := responses.Failure[any](http.StatusUnauthorized, "invalid token format")
-				c.JSON(http.StatusUnauthorized, res)
-				c.Abort()
-				return
-			}
-			c.Next()
-			return
-		}
-
 		token, err := jwt.ParseWithClaims(tokenString, &models.JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			}
 			return config.JWTKey, nil
 		})
 
@@ -56,9 +49,4 @@ func JwtMiddleware() gin.HandlerFunc {
 			c.Abort()
 		}
 	}
-}
-
-func isJwtFormat(token string) bool {
-	parts := strings.Split(token, ".")
-	return len(parts) == 3
 }

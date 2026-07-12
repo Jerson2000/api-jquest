@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/jerson2000/jquest/config"
 	"github.com/jerson2000/jquest/dtos"
 	"github.com/jerson2000/jquest/enums"
 	"github.com/jerson2000/jquest/models"
@@ -26,9 +25,7 @@ type jobService struct {
 	recruiterRepo repositories.RecruiterRepository
 }
 
-func NewJobService() JobService {
-	jobRepo := repositories.NewJobRepository(config.Database)
-	recruiterRepo := repositories.NewRecruiterRepository(config.Database)
+func NewJobService(jobRepo repositories.JobRepository, recruiterRepo repositories.RecruiterRepository) JobService {
 	return &jobService{jobRepo, recruiterRepo}
 }
 

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/jerson2000/jquest/config"
 	"github.com/jerson2000/jquest/dtos"
 	"github.com/jerson2000/jquest/enums"
 	"github.com/jerson2000/jquest/models"
@@ -27,10 +26,7 @@ type recruiterService struct {
 	userRepo      repositories.UserRepository
 }
 
-func NewRecruiterService() RecruiterService {
-	recruiterRepo := repositories.NewRecruiterRepository(config.Database)
-	companyRepo := repositories.NewCompanyRepository(config.Database)
-	userRepo := repositories.NewUserRepository(config.Database)
+func NewRecruiterService(recruiterRepo repositories.RecruiterRepository, companyRepo repositories.CompanyRepository, userRepo repositories.UserRepository) RecruiterService {
 	return &recruiterService{recruiterRepo, companyRepo, userRepo}
 }
 
