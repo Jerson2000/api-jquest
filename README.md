@@ -1,154 +1,535 @@
-# JQuest API – Enterprise Job Portal Backend
+# API Endpoints Documentation
 
-A high-performance, scalable REST API backend for a modern Job Portal platform. Built with **Golang (Gin)** and designed with **Clean Architecture**, this project aims to provide enterprise-grade features ranging from complex RBAC and ATS (Application Tracking System) capabilities to advanced search and monetization.
-
-## 🚀 Project Status: Active Development
-
-> **Current Focus**: Implementing Core Domain Logic (Jobs, Companies) and Advanced Search.
+Base URL: `http://localhost:8080` (or your deployed server domain).
 
 ---
 
-## 🗺️ Enterprise Roadmap & To-Do List
+## Authentication & Headers
 
-### Phase 1: Core Foundation & Security (✅ Mostly Complete)
-Establish the secure bedrock of the application.
-- [x] **Project Skeleton**: Standard Go Clean Architecture (Controllers, Services, Repositories, DTOs).
-- [x] **Configuration Management**: Environment variables (Godotenv) & Type-safe config.
-- [x] **Database Connectivity**: PostgreSQL connection with GORM & Auto-migrations.
-- [x] **Authentication**:
-    - [x] JWT Access & Refresh Token rotation.
-    - [x] Login / Signup / Logout endpoints.
-    - [x] Password Hashing (Argon2/Bcrypt) via `crypto` package.
-- [x] **Authorization (RBAC)**:
-    - [x] Role-Based Access Control using **Casbin**.
-    - [x] Middleware for role verification (Admin, Employer, Candidate).
-- [x] **Security Hardening**:
-    - [x] CSRF Protection (Double Submit Cookie).
-    - [x] Rate Limiting (Token Bucket via Redis/Memory).
-- [ ] **Advanced Auth** (Planned):
-    - [ ] OAuth2 / SSO (Google, LinkedIn, GitHub).
-    - [ ] MFA (Multi-Factor Authentication).
+Endpoints requiring authentication require a valid JSON Web Token (JWT) in the headers.
 
-### Phase 2: User & Organization Management (🚧 In Progress)
-Manage functionality for different user personas.
-- [x] **User Management**:
-    - [x] CRUD Operations for Users.
-    - [x] Profile Management.
-- [ ] **Company Profiles (Employer)**:
-    - [ ] Create/Manage Company Pages.
-    - [ ] Team Member Management (Invite recruiters to company).
-    - [ ] Company branding (Logo, Banner, verify status).
-- [ ] **Candidate Profiles**:
-    - [ ] Resume Parsed Data.
-    - [ ] Skills tagging & Portfolio links.
-    - [ ] "Open to Work" status.
+### Required Request Headers (Protected Endpoints)
+```http
+Authorization: Bearer <your_access_token>
+```
 
-### Phase 3: Job Board Mechanics
-The core domain of the platform.
-- [ ] **Job Posting Engine**:
-    - [ ] CRUD for Job Posts.
-    - [ ] Rich Text Description support.
-    - [ ] Job Metadata (Salary range, Remote/On-site, Experience Level).
-    - [ ] Expiration & Renewal logic.
-- [ ] **Job Applications**:
-    - [ ] Apply functionality.
-    - [ ] Application lifecycle states (Applied, Screening, Interview, Offer, Rejected).
-    - [ ] Resume/CV Uploads (AWS S3 / MinIO integration).
-
-### Phase 4: Search & Discovery (High Performance)
-- [ ] **Advanced Search**:
-    - [ ] Full-text search (Postgres TSVector or Elasticsearch/Meilisearch).
-    - [ ] Filters (Location, Salary, Tech Stack, Date Posted).
-- [ ] **Recommendations**:
-    - [ ] "Jobs you might like" based on User Skills vs Job Requirements.
-
-### Phase 5: Communication & Notifications
-- [ ] **Notification System**:
-    - [ ] In-app Realtime Notifications (WebSockets/SSE).
-    - [ ] Email Transactional Mails (SendGrid/SES) - Welcome, Password Reset, Application Status.
-- [ ] **Messaging System**:
-    - [ ] Direct Messaging between Candidate and Recruiter.
-
-### Phase 6: Monetization & Admin
-- [ ] **Payments & Subscriptions**:
-    - [ ] Stripe/PayPal Integration.
-    - [ ] Premium Job Posts (Featured, Pinned).
-    - [ ] Employer Subscription Plans (SaaS model).
-- [ ] **Admin Dashboard**:
-    - [ ] Moderate User/Content.
-    - [ ] Platform Analytics (Signups, Applications, Revenue).
-
-### Phase 7: DevOps & Observability
-- [x] **Hot Reload**: Configured with `Air`.
-- [x] **Docker Support**: Basic Dockerfile (if available, otherwise To-Do).
-- [ ] **CI/CD**: GitHub Actions for linting, testing, and building.
-- [ ] **Observability**:
-    - [ ] Structured Logging (Zap/ZeroLog).
-    - [ ] Metrics (Prometheus) & Tracing (OpenTelemetry).
-    - [ ] Error Tracking (Sentry).
-- [ ] **Documentation**:
-    - [ ] Swagger/OpenAPI Auto-generation (`swaggo`).
-    - [ ] Setup Guides.
+### CSRF Protection (State-changing Web Requests)
+For state-changing web requests (POST, PUT, PATCH, DELETE) without an `Authorization` header, CSRF validation is enforced.
+1. Fetch the token from `/api/token` (which sets the `_forgery.anti` cookie and returns a JSON payload).
+2. Attach the token in your requests via the header:
+```http
+X-CSRF-Token: <csrf_token_value>
+```
 
 ---
 
-## 🛠 Tech Stack
+## 1. General Config & Utility
 
-| Component | Technology | Description |
-| :--- | :--- | :--- |
-| **Language** | Go (Golang) | High-performance, concurrent backend language. |
-| **Framework** | Gin | Lightweight and fast Web Framework. |
-| **Database** | PostgreSQL | Robust Relational Database. |
-| **ORM** | GORM | Developer-friendly ORM for Go. |
-| **Caching** | Redis | In-memory store for Caching & Rate Limiting. |
-| **Auth** | JWT + Casbin | Secure Stateless Auth & Granular Permissions. |
-| **Validation** | go-playground/validator | Struct and field validation. |
+### GET `/api/token`
+- **Auth Required**: No (Public)
+- **Description**: Returns CSRF token and sets the anti-forgery cookie.
+- **Sample Request**:
+  ```bash
+  curl -X GET http://localhost:8080/api/token
+  ```
+
+### GET `/api/current`
+- **Auth Required**: Yes
+- **Description**: Retrieves detailed info of the currently logged-in user.
+- **Sample Request**:
+  ```bash
+  curl -X GET http://localhost:8080/api/current \
+       -H "Authorization: Bearer <your_token>"
+  ```
+- **Response Shape**:
+  ```json
+  {
+    "id": 1,
+    "name": "Jane Doe",
+    "role": "candidate"
+  }
+  ```
 
 ---
 
-## ⚡ Getting Started
+## 2. Authentication (`/api/auth`)
 
-### Prerequisites
-- [Go 1.22+](https://go.dev/dl/)
-- [PostgreSQL](https://www.postgresql.org/)
-- [Redis](https://redis.io/)
+### POST `/api/auth/signup`
+- **Auth Required**: No (Public)
+- **Request Body (`AuthSignupRequestDto`)**:
+  ```json
+  {
+    "name": "Jane Doe",
+    "email": "jane@example.com",
+    "password": "password123"
+  }
+  ```
+- **Sample Request**:
+  ```bash
+  curl -X POST http://localhost:8080/api/auth/signup \
+       -H "Content-Type: application/json" \
+       -d '{"name": "Jane Doe", "email": "jane@example.com", "password": "password123"}'
+  ```
 
-### Installation
+### POST `/api/auth/login`
+- **Auth Required**: No (Public)
+- **Request Body (`AuthLoginRequestDto`)**:
+  ```json
+  {
+    "email": "jane@example.com",
+    "password": "password123"
+  }
+  ```
+- **Sample Request**:
+  ```bash
+  curl -X POST http://localhost:8080/api/auth/login \
+       -H "Content-Type: application/json" \
+       -d '{"email": "jane@example.com", "password": "password123"}'
+  ```
+- **Response Shape (`AuthResponseDto`)**:
+  ```json
+  {
+    "status": 200,
+    "data": {
+      "token": "eyJhbGciOi...",
+      "refreshToken": "eyJhbGciOi..."
+    }
+  }
+  ```
 
-1. **Clone the Repo**
-   ```bash
-   git clone https://github.com/jerson2000/jquest.git
-   cd jquest
-   ```
+### POST `/api/auth/refresh`
+- **Auth Required**: Yes (JWT bearer token check + refresh token validation)
+- **Request Body (`AuthRefreshRequestDto`)**:
+  ```json
+  {
+    "refreshToken": "eyJhbGciOi..."
+  }
+  ```
+- **Sample Request**:
+  ```bash
+  curl -X POST http://localhost:8080/api/auth/refresh \
+       -H "Authorization: Bearer <your_token>" \
+       -H "Content-Type: application/json" \
+       -d '{"refreshToken": "your_refresh_token"}'
+  ```
 
-2. **Setup Environment**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your DB and Redis credentials
-   ```
+---
 
-3. **Install Dependencies**
-   ```bash
-   go mod download
-   ```
+## 3. Users (`/api/users`)
 
-4. **Run Locally**
-   ```bash
-   # Standard Run
-   go run main.go
+### GET `/api/users`
+- **Auth Required**: Yes
+- **Description**: Returns all users (cached for 1 minute).
+- **Sample Request**:
+  ```bash
+  curl -X GET http://localhost:8080/api/users \
+       -H "Authorization: Bearer <your_token>"
+  ```
 
-   # Or with Air (Hot Reload)
-   air
-   ```
+### GET `/api/users/:id`
+- **Auth Required**: Yes
+- **Description**: Returns user by ID (cached for 1 minute).
+- **Sample Request**:
+  ```bash
+  curl -X GET http://localhost:8080/api/users/1 \
+       -H "Authorization: Bearer <your_token>"
+  ```
 
-## 📡 API Overview
+### POST `/api/users`
+- **Auth Required**: Yes
+- **Request Body (`UserCreateRequestDto`)**:
+  ```json
+  {
+    "name": "Alex Smith",
+    "email": "alex@example.com",
+    "password": "securepwd123",
+    "phone": "09123456789",
+    "gender": "male"
+  }
+  ```
+- **Sample Request**:
+  ```bash
+  curl -X POST http://localhost:8080/api/users \
+       -H "Authorization: Bearer <your_token>" \
+       -H "Content-Type: application/json" \
+       -d '{"name": "Alex", "email": "alex@example.com", "password": "pwd", "gender": "male"}'
+  ```
 
-| Method | Endpoint | Access | Description |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/api/auth/login` | Public | Login and receive Tokens |
-| `POST` | `/api/auth/signup` | Public | Register new account |
-| `POST` | `/api/auth/refresh` | Public | Refresh Access Token |
-| `GET` | `/api/users` | Admin | List all users |
-| `GET` | `/api/current` | Public | Get current logged-in user details |
+### PUT `/api/users/:id`
+- **Auth Required**: Yes
+- **Request Body (`UserUpdateRequestDto`)**:
+  ```json
+  {
+    "name": "Alex Updated",
+    "email": "alex_new@example.com",
+    "phone": "09999999999",
+    "gender": "male"
+  }
+  ```
+- **Sample Request**:
+  ```bash
+  curl -X PUT http://localhost:8080/api/users/1 \
+       -H "Authorization: Bearer <your_token>" \
+       -H "Content-Type: application/json" \
+       -d '{"name": "Alex Updated"}'
+  ```
 
-> *Full API documentation will be available via Swagger UI (Coming Soon)*
+### DELETE `/api/users/:id`
+- **Auth Required**: Yes
+- **Sample Request**:
+  ```bash
+  curl -X DELETE http://localhost:8080/api/users/1 \
+       -H "Authorization: Bearer <your_token>"
+  ```
+
+---
+
+## 4. Companies (`/api/companies`)
+
+### GET `/api/companies`
+- **Auth Required**: No (Public)
+- **Description**: Retrieves list of all companies.
+- **Sample Request**:
+  ```bash
+  curl -X GET http://localhost:8080/api/companies
+  ```
+
+### POST `/api/companies/apply`
+- **Auth Required**: No (Public)
+- **Description**: Special path for onboarding a recruiter along with their company.
+- **Request Body (`CompanyApplyRequestDto`)**:
+  ```json
+  {
+    "company": {
+      "name": "Super Tech Inc",
+      "industry": "Software",
+      "website": "https://supertech.example.com",
+      "location": "New York",
+      "companySize": "10-50"
+    },
+    "user": {
+      "name": "Jane Employer",
+      "email": "jane@supertech.example.com",
+      "password": "password123",
+      "gender": "female"
+    }
+  }
+  ```
+- **Sample Request**:
+  ```bash
+  curl -X POST http://localhost:8080/api/companies/apply \
+       -H "Content-Type: application/json" \
+       -d '{"company": {"name": "Tech Corp", "industry": "IT"}, "user": {"name": "Jane", "email": "jane@corp.com", "password": "pwd", "gender": "female"}}'
+  ```
+
+### POST `/api/companies`
+- **Auth Required**: Yes
+- **Request Body (`CompanyCreateRequestDto`)**:
+  ```json
+  {
+    "name": "Innovative Startups",
+    "industry": "Venture Capital",
+    "website": "https://innovative.example.com",
+    "location": "San Francisco",
+    "companySize": "1-10"
+  }
+  ```
+- **Sample Request**:
+  ```bash
+  curl -X POST http://localhost:8080/api/companies \
+       -H "Authorization: Bearer <your_token>" \
+       -H "Content-Type: application/json" \
+       -d '{"name": "Innovative Startups", "industry": "VC"}'
+  ```
+
+---
+
+## 5. Jobs (`/api/jobs`)
+
+### GET `/api/jobs`
+- **Auth Required**: No (Public)
+- **Query Parameters**:
+  - `page` (optional, default: `1`)
+  - `limit` (optional, default: `10`)
+- **Sample Request**:
+  ```bash
+  curl -X GET "http://localhost:8080/api/jobs?page=1&limit=10"
+  ```
+
+### GET `/api/jobs/:id`
+- **Auth Required**: No (Public)
+- **Sample Request**:
+  ```bash
+  curl -X GET http://localhost:8080/api/jobs/1
+  ```
+
+### POST `/api/jobs`
+- **Auth Required**: Yes (Recruiter / Admin)
+- **Request Body (`JobCreateJobRequestDto`)**:
+  ```json
+  {
+    "companyId": 1,
+    "title": "Backend Go Developer",
+    "description": "Develop and maintain robust microservices using Go.",
+    "location": "Remote",
+    "jobType": "full-time",
+    "experience": 3,
+    "salaryMin": 80000,
+    "salaryMax": 120000,
+    "status": "open",
+    "deadline": "2026-12-31T23:59:59Z"
+  }
+  ```
+- **Sample Request**:
+  ```bash
+  curl -X POST http://localhost:8080/api/jobs \
+       -H "Authorization: Bearer <your_token>" \
+       -H "Content-Type: application/json" \
+       -d '{"companyId": 1, "title": "Go Developer", "description": "Go lang", "location": "Remote", "jobType": "full-time", "experience": 3}'
+  ```
+
+### PUT `/api/jobs/:id`
+- **Auth Required**: Yes (Recruiter / Admin)
+- **Request Body**: Partial updates of fields specified in `JobCreateJobRequestDto`.
+- **Sample Request**:
+  ```bash
+  curl -X PUT http://localhost:8080/api/jobs/1 \
+       -H "Authorization: Bearer <your_token>" \
+       -H "Content-Type: application/json" \
+       -d '{"title": "Senior Go Developer"}'
+  ```
+
+### DELETE `/api/jobs/:id`
+- **Auth Required**: Yes (Recruiter / Admin)
+- **Sample Request**:
+  ```bash
+  curl -X DELETE http://localhost:8080/api/jobs/1 \
+       -H "Authorization: Bearer <your_token>"
+  ```
+
+---
+
+## 6. Applications (`/api/applications`)
+
+### POST `/api/applications`
+- **Auth Required**: Yes (Candidate)
+- **Request Body (`ApplicationCreateRequestDto`)**:
+  ```json
+  {
+    "jobId": 1
+  }
+  ```
+- **Sample Request**:
+  ```bash
+  curl -X POST http://localhost:8080/api/applications \
+       -H "Authorization: Bearer <your_token>" \
+       -H "Content-Type: application/json" \
+       -d '{"jobId": 1}'
+  ```
+
+### GET `/api/applications/my`
+- **Auth Required**: Yes (Candidate)
+- **Query Parameters**:
+  - `page` (optional, default: `1`)
+  - `limit` (optional, default: `10`)
+- **Sample Request**:
+  ```bash
+  curl -X GET "http://localhost:8080/api/applications/my?page=1&limit=10" \
+       -H "Authorization: Bearer <your_token>"
+  ```
+
+### GET `/api/applications/job/:jobId`
+- **Auth Required**: Yes (Recruiter / Admin)
+- **Query Parameters**:
+  - `page` (optional, default: `1`)
+  - `limit` (optional, default: `10`)
+- **Sample Request**:
+  ```bash
+  curl -X GET "http://localhost:8080/api/applications/job/1?page=1&limit=10" \
+       -H "Authorization: Bearer <your_token>"
+  ```
+
+### PATCH `/api/applications/:id/status`
+- **Auth Required**: Yes (Recruiter / Admin)
+- **Request Body (`ApplicationUpdateStatusRequestDto`)**:
+  - **Status Choices**: `pending`, `reviewing`, `interviewig`, `offered`, `rejected`, `accepted`
+  ```json
+  {
+    "status": "interviewig"
+  }
+  ```
+- **Sample Request**:
+  ```bash
+  curl -X PATCH http://localhost:8080/api/applications/1/status \
+       -H "Authorization: Bearer <your_token>" \
+       -H "Content-Type: application/json" \
+       -d '{"status": "interviewig"}'
+  ```
+
+---
+
+## 7. Recruiters (`/api/recruiters`)
+
+### GET `/api/recruiters`
+- **Auth Required**: Yes
+- **Sample Request**:
+  ```bash
+  curl -X GET http://localhost:8080/api/recruiters \
+       -H "Authorization: Bearer <your_token>"
+  ```
+
+### GET `/api/recruiters/company/:id`
+- **Auth Required**: Yes
+- **Sample Request**:
+  ```bash
+  curl -X GET http://localhost:8080/api/recruiters/company/1 \
+       -H "Authorization: Bearer <your_token>"
+  ```
+
+### GET `/api/recruiters/user/:userId`
+- **Auth Required**: Yes
+- **Sample Request**:
+  ```bash
+  curl -X GET http://localhost:8080/api/recruiters/user/1 \
+       -H "Authorization: Bearer <your_token>"
+  ```
+
+### POST `/api/recruiters`
+- **Auth Required**: Yes
+- **Request Body (`RecruiterCreateRequestDto`)**:
+  ```json
+  {
+    "companyId": 1,
+    "position": "Lead Talent Acquisition"
+  }
+  ```
+- **Sample Request**:
+  ```bash
+  curl -X POST http://localhost:8080/api/recruiters \
+       -H "Authorization: Bearer <your_token>" \
+       -H "Content-Type: application/json" \
+       -d '{"companyId": 1, "position": "Recruitment Specialist"}'
+  ```
+
+---
+
+## 8. Skills (`/api/skills`)
+
+### GET `/api/skills`
+- **Auth Required**: No (Public)
+- **Description**: Returns all registered skills.
+- **Sample Request**:
+  ```bash
+  curl -X GET http://localhost:8080/api/skills
+  ```
+
+### POST `/api/skills/candidate`
+- **Auth Required**: Yes (Candidate)
+- **Description**: Associate a skill to the logged-in candidate's profile.
+- **Request Body (`SkillCreateRequestDto`)**:
+  ```json
+  {
+    "name": "Go"
+  }
+  ```
+- **Sample Request**:
+  ```bash
+  curl -X POST http://localhost:8080/api/skills/candidate \
+       -H "Authorization: Bearer <your_token>" \
+       -H "Content-Type: application/json" \
+       -d '{"name": "Go"}'
+  ```
+
+### DELETE `/api/skills/candidate`
+- **Auth Required**: Yes (Candidate)
+- **Description**: Disassociate a skill from the logged-in candidate's profile.
+- **Request Body (`SkillCreateRequestDto`)**:
+  ```json
+  {
+    "name": "Go"
+  }
+  ```
+- **Sample Request**:
+  ```bash
+  curl -X DELETE http://localhost:8080/api/skills/candidate \
+       -H "Authorization: Bearer <your_token>" \
+       -H "Content-Type: application/json" \
+       -d '{"name": "Go"}'
+  ```
+
+### POST `/api/skills/job/:jobId`
+- **Auth Required**: Yes (Recruiter)
+- **Description**: Add a skill requirements to a specific job post.
+- **Request Body (`SkillCreateRequestDto`)**:
+  ```json
+  {
+    "name": "Kubernetes"
+  }
+  ```
+- **Sample Request**:
+  ```bash
+  curl -X POST http://localhost:8080/api/skills/job/1 \
+       -H "Authorization: Bearer <your_token>" \
+       -H "Content-Type: application/json" \
+       -d '{"name": "Kubernetes"}'
+  ```
+
+### DELETE `/api/skills/job/:jobId`
+- **Auth Required**: Yes (Recruiter)
+- **Description**: Remove a skill requirement from a specific job post.
+- **Request Body (`SkillCreateRequestDto`)**:
+  ```json
+  {
+    "name": "Kubernetes"
+  }
+  ```
+- **Sample Request**:
+  ```bash
+  curl -X DELETE http://localhost:8080/api/skills/job/1 \
+       -H "Authorization: Bearer <your_token>" \
+       -H "Content-Type: application/json" \
+       -d '{"name": "Kubernetes"}'
+  ```
+
+---
+
+## 9. Saved Jobs / Bookmarks (`/api/saved-jobs`)
+
+### POST `/api/saved-jobs`
+- **Auth Required**: Yes (Candidate)
+- **Description**: Bookmark/save a job posting.
+- **Request Body (`SavedJobCreateRequestDto`)**:
+  ```json
+  {
+    "jobId": 1
+  }
+  ```
+- **Sample Request**:
+  ```bash
+  curl -X POST http://localhost:8080/api/saved-jobs \
+       -H "Authorization: Bearer <your_token>" \
+       -H "Content-Type: application/json" \
+       -d '{"jobId": 1}'
+  ```
+
+### DELETE `/api/saved-jobs/:jobId`
+- **Auth Required**: Yes (Candidate)
+- **Description**: Remove a saved job bookmark.
+- **Sample Request**:
+  ```bash
+  curl -X DELETE http://localhost:8080/api/saved-jobs/1 \
+       -H "Authorization: Bearer <your_token>"
+  ```
+
+### GET `/api/saved-jobs`
+- **Auth Required**: Yes (Candidate)
+- **Description**: Retrieve a candidate's saved job posts.
+- **Query Parameters**:
+  - `page` (optional, default: `1`)
+  - `limit` (optional, default: `10`)
+- **Sample Request**:
+  ```bash
+  curl -X GET "http://localhost:8080/api/saved-jobs?page=1&limit=10" \
+       -H "Authorization: Bearer <your_token>"
+  ```
+
