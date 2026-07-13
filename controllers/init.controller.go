@@ -70,9 +70,17 @@ func InitController(router *gin.Engine) {
 
 
 	router.GET("/api/token", func(c *gin.Context) {
-		xtoken, _ := c.Get("csrf_token")
-		c.Header("X-CSRF-Token", xtoken.(string))
-		res := responses.Success[any](http.StatusOK, gin.H{"token": xtoken})
+		xtoken, exists := c.Get("csrf_token")
+		var tokenStr string
+		if exists && xtoken != nil {
+			if s, ok := xtoken.(string); ok {
+				tokenStr = s
+			}
+		}
+		if tokenStr != "" {
+			c.Header("X-CSRF-Token", tokenStr)
+		}
+		res := responses.Success[any](http.StatusOK, gin.H{"token": tokenStr})
 		c.JSON(http.StatusOK, res)
 	})
 
