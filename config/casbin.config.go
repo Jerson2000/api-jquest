@@ -4,20 +4,26 @@ import (
 	"log"
 
 	"github.com/casbin/casbin/v3"
+	"github.com/casbin/casbin/v3/model"
+	stringadapter "github.com/casbin/casbin/v3/persist/string-adapter"
+	casbindata "github.com/jerson2000/jquest/casbin"
 )
 
 var CasbinEnforcer *casbin.Enforcer
 
 func configCasbinEnforcer() {
 	var err error
-	CasbinEnforcer, err = casbin.NewEnforcer("casbin/rbac_model.conf", "casbin/rbac_policy.csv")
+	m, err := model.NewModelFromString(casbindata.RbacModel)
 	if err != nil {
 		log.Printf("Failed to initialize Casbin enforcer: %v", err)
 		return
 	}
 
-	if err = CasbinEnforcer.LoadPolicy(); err != nil {
-		log.Printf("Failed to load Casbin policy: %v", err)
+	sa := stringadapter.NewAdapter(casbindata.RbacPolicy)
+
+	CasbinEnforcer, err = casbin.NewEnforcer(m, sa)
+	if err != nil {
+		log.Printf("Failed to initialize Casbin enforcer: %v", err)
 		return
 	}
 
