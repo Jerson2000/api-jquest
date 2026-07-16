@@ -45,6 +45,7 @@ func configDatabaseConnection() error {
 		&models.Candidate{},
 		&models.Application{},
 		&models.Experience{},
+		&models.Education{},
 		&models.Skill{},
 		&models.SavedJob{},
 	); err != nil {

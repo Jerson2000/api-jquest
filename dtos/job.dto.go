@@ -12,6 +12,8 @@ type JobCreateJobRequestDto struct {
 	Description string          `json:"description" binding:"required"`
 	Location    string          `json:"location" binding:"required"`
 	JobType     enums.JobType   `json:"jobType" binding:"required,oneof=full-time part-time contract internship"`
+	WorkMode    enums.WorkMode  `json:"workMode" binding:"required,oneof=on-site remote hybrid"`
+	Category    string          `json:"category" binding:"required"`
 	Experience  int             `json:"experience" binding:"required,numeric"`
 	SalaryMin   *int            `json:"salaryMin"`
 	SalaryMax   *int            `json:"salaryMax"`
@@ -27,6 +29,8 @@ type JobResponseDto struct {
 	Description string             `json:"description"`
 	Location    string             `json:"location"`
 	JobType     enums.JobType      `json:"jobType"`
+	WorkMode    enums.WorkMode     `json:"workMode"`
+	Category    string             `json:"category"`
 	Experience  int                `json:"experience"`
 	SalaryMin   *int               `json:"salaryMin,omitempty"`
 	SalaryMax   *int               `json:"salaryMax,omitempty"`

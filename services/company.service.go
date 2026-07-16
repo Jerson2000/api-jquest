@@ -122,7 +122,7 @@ func (s *companyService) ApplyAsRecruiter(ctx context.Context, companyDto dtos.C
 			Name:     companyDto.User.Name,
 			Email:    companyDto.User.Email,
 			Password: companyDto.User.Password,
-			Sex:      companyDto.User.Sex,
+			Gender:   companyDto.User.Gender,
 			Phone:    companyDto.User.Phone,
 			Role:     enums.RECRUITER,
 		}

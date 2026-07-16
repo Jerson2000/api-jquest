@@ -4,17 +4,18 @@ import (
 	"time"
 
 	"github.com/jerson2000/jquest/dtos"
+	"gorm.io/gorm"
 )
 
 type Recruiter struct {
-	Id         int        `gorm:"primaryKey;autoIncrement" json:"id"`
-	UserId     int        `gorm:"not null" json:"userId"`
-	CompanyId  int        `gorm:"not null" json:"companyId"`
-	Position   string     `gorm:"size:100;not null" json:"position"`
-	IsVerified bool       `gorm:"default:false" json:"isVerified"`
-	CreatedAt  time.Time  `json:"createdAt"`
-	UpdatedAt  time.Time  `json:"updatedAt"`
-	DeletedAt  *time.Time `gorm:"index" json:"deletedAt,omitempty"`
+	Id         int            `gorm:"primaryKey;autoIncrement" json:"id"`
+	UserId     int            `gorm:"uniqueIndex;not null" json:"userId"`
+	CompanyId  int            `gorm:"not null" json:"companyId"`
+	Position   string         `gorm:"size:100;not null" json:"position"`
+	IsVerified bool           `gorm:"default:false" json:"isVerified"`
+	CreatedAt  time.Time      `json:"createdAt"`
+	UpdatedAt  time.Time      `json:"updatedAt"`
+	DeletedAt  gorm.DeletedAt `gorm:"index" json:"deletedAt,omitempty"`
 
 	User    *User    `gorm:"foreignKey:UserId" json:"user,omitempty"`
 	Company *Company `gorm:"foreignKey:CompanyId" json:"company,omitempty"`

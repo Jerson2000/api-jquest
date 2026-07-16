@@ -5,21 +5,22 @@ import (
 
 	"github.com/jerson2000/jquest/dtos"
 	"github.com/jerson2000/jquest/enums"
+	"gorm.io/gorm"
 )
 
 type User struct {
-	Id         int        `gorm:"primaryKey;autoIncrement" json:"id"`
-	Name       string     `gorm:"size:100;not null" json:"name"`
-	Email      string     `gorm:"size:150;uniqueIndex;not null" json:"email"`
-	Role       enums.Role `gorm:"type:varchar(20);not null;default:candidate" json:"role"`
-	Password   string     `gorm:"not null" json:"password,omitempty"`
-	Phone      string     `gorm:"size:20;default:null" json:"phone,omitempty"`
-	Sex        string     `gorm:"default:null" json:"gender,omitempty"`
-	IsActive   bool       `gorm:"default:true" json:"isActive"`
-	IsVerified bool       `gorm:"default:false" json:"isVerified"`
-	CreatedAt  time.Time  `json:"created_at"`
-	UpdatedAt  time.Time  `json:"updated_at"`
-	DeletedAt  *time.Time `gorm:"index" json:"deletedAt,omitempty"`
+	Id         int            `gorm:"primaryKey;autoIncrement" json:"id"`
+	Name       string         `gorm:"size:100;not null" json:"name"`
+	Email      string         `gorm:"size:150;uniqueIndex;not null" json:"email"`
+	Role       enums.Role     `gorm:"type:varchar(20);not null;default:candidate" json:"role"`
+	Password   string         `gorm:"size:255;not null" json:"password,omitempty"`
+	Phone      string         `gorm:"size:20;default:null" json:"phone,omitempty"`
+	Gender     string         `gorm:"size:20;default:null" json:"gender,omitempty"`
+	IsActive   bool           `gorm:"default:true" json:"isActive"`
+	IsVerified bool           `gorm:"default:false" json:"isVerified"`
+	CreatedAt  time.Time      `json:"createdAt"`
+	UpdatedAt  time.Time      `json:"updatedAt"`
+	DeletedAt  gorm.DeletedAt `gorm:"index" json:"deletedAt,omitempty"`
 
 	Candidate *Candidate `gorm:"foreignKey:UserId" json:"candidate,omitempty"`
 }
@@ -31,7 +32,7 @@ func (u *User) ToUserResponseDto() dtos.UserResponseDto {
 		Email:      u.Email,
 		Role:       u.Role,
 		Phone:      u.Phone,
-		Sex:        u.Sex,
+		Gender:     u.Gender,
 		IsActive:   u.IsActive,
 		IsVerified: u.IsVerified,
 		CreatedAt:  u.CreatedAt,

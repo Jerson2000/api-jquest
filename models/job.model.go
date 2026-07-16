@@ -5,6 +5,7 @@ import (
 
 	"github.com/jerson2000/jquest/dtos"
 	"github.com/jerson2000/jquest/enums"
+	"gorm.io/gorm"
 )
 
 type Job struct {
@@ -14,6 +15,8 @@ type Job struct {
 	Description  string             `gorm:"type:text;not null" json:"description"`
 	Location     string             `gorm:"size:200" json:"location"`
 	JobType      enums.JobType      `gorm:"size:50;index" json:"jobType"`
+	WorkMode     enums.WorkMode     `gorm:"size:50;index" json:"workMode"`
+	Category     string             `gorm:"size:100;index" json:"category"`
 	Experience   int                `json:"experience"`
 	SalaryMin    *int               `json:"salaryMin,omitempty"`
 	SalaryMax    *int               `json:"salaryMax,omitempty"`
@@ -24,7 +27,7 @@ type Job struct {
 	PublishedAt  *time.Time         `gorm:"index" json:"publishedAt,omitempty"`
 	CreatedAt    time.Time          `json:"createdAt"`
 	UpdatedAt    time.Time          `json:"updatedAt"`
-	DeletedAt    *time.Time         `gorm:"index" json:"deletedAt,omitempty"`
+	DeletedAt    gorm.DeletedAt     `gorm:"index" json:"deletedAt,omitempty"`
 
 	Company      Company       `gorm:"foreignKey:CompanyId" json:"company"`
 	Applications []Application `gorm:"foreignKey:JobId" json:"applications"`
@@ -43,6 +46,8 @@ func (j *Job) ToJobResponseDto() dtos.JobResponseDto {
 		Description: j.Description,
 		Location:    j.Location,
 		JobType:     j.JobType,
+		WorkMode:    j.WorkMode,
+		Category:    j.Category,
 		Experience:  j.Experience,
 		SalaryMin:   j.SalaryMin,
 		SalaryMax:   j.SalaryMax,

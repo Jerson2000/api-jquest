@@ -62,7 +62,7 @@ func (r *userRepo) Update(ctx context.Context, id int, user models.User) (models
 	existing.Role = user.Role
 	// existing.Password // Password update usually separate or handled if provided? Assuming dto handles mapping
 	existing.Phone = user.Phone
-	existing.Sex = user.Sex
+	existing.Gender = user.Gender
 	existing.IsActive = user.IsActive
 	existing.IsVerified = user.IsVerified
 

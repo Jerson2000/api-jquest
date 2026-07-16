@@ -5,7 +5,9 @@ import (
 )
 
 type ApplicationCreateRequestDto struct {
-	JobId int `json:"jobId" binding:"required"`
+	JobId       int    `json:"jobId" binding:"required"`
+	CoverLetter string `json:"coverLetter"`
+	ResumeURL   string `json:"resumeUrl"`
 }
 
 type ApplicationUpdateStatusRequestDto struct {
@@ -18,6 +20,8 @@ type ApplicationResponseDto struct {
 	JobId       int                   `json:"jobId"`
 	Status      string                `json:"status"`
 	AppliedAt   time.Time             `json:"appliedAt"`
+	CoverLetter string                `json:"coverLetter,omitempty"`
+	ResumeURL   string                `json:"resumeUrl,omitempty"`
 	Job         JobResponseDto        `json:"job,omitempty"`
 	Candidate   *CandidateResponseDto `json:"candidate,omitempty"`
 }

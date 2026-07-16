@@ -1,6 +1,7 @@
 # Policies
 
 # Admin 
+p, admin, /api/current, (GET)
 p, admin, /api/users, (GET)|(PUT)|(PATCH)|(POST)|(DELETE)
 p, admin, /api/users/*, (GET)|(PUT)|(PATCH)|(POST)|(DELETE)
 p, admin, /api/companies, (GET)|(PUT)|(PATCH)|(POST)|(DELETE)

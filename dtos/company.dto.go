@@ -6,6 +6,8 @@ type CompanyCreateRequestDto struct {
 	Website     *string `json:"website"`
 	Location    *string `json:"location"`
 	CompanySize *string `json:"companySize"`
+	Description *string `json:"description"`
+	LogoURL     *string `json:"logoUrl"`
 }
 
 type CompanyResponseDto struct {
@@ -15,6 +17,8 @@ type CompanyResponseDto struct {
 	Website     string `json:"website"`
 	Location    string `json:"location"`
 	CompanySize string `json:"companySize"`
+	Description string `json:"description,omitempty"`
+	LogoURL     string `json:"logoUrl,omitempty"`
 }
 
 type CompanyApplyRequestDto struct {

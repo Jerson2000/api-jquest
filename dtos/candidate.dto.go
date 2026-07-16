@@ -10,19 +10,24 @@ type CandidateCreateRequestDto struct {
 	TotalExperience float32 `json:"totalExperience"`
 	CurrentTitle    string  `json:"currentTitle"`
 	CurrentLocation string  `json:"currentLocation"`
+	Bio             string  `json:"bio"`
+	ExpectedSalary  *int    `json:"expectedSalary"`
 }
 
 type CandidateResponseDto struct {
-	Id              int      `json:"id"`
-	FirstName       string   `json:"firstName"`
-	LastName        string   `json:"lastName"`
-	Email           string   `json:"email"`
-	Phone           string   `json:"phone"`
-	LinkedInURL     string   `json:"linkedinUrl"`
-	ResumeURL       string   `json:"resumeUrl"`
-	TotalExperience float32  `json:"totalExperience"`
-	CurrentTitle    string   `json:"currentTitle"`
-	CurrentLocation string   `json:"currentLocation"`
-	Skills          []string `json:"skills,omitempty"`
+	Id              int                    `json:"id"`
+	FirstName       string                 `json:"firstName"`
+	LastName        string                 `json:"lastName"`
+	Email           string                 `json:"email"`
+	Phone           string                 `json:"phone"`
+	LinkedInURL     string                 `json:"linkedinUrl"`
+	ResumeURL       string                 `json:"resumeUrl"`
+	TotalExperience float32                `json:"totalExperience"`
+	CurrentTitle    string                 `json:"currentTitle"`
+	CurrentLocation string                 `json:"currentLocation"`
+	Bio             string                 `json:"bio,omitempty"`
+	ExpectedSalary  *int                   `json:"expectedSalary,omitempty"`
+	Skills          []string               `json:"skills,omitempty"`
+	Educations      []EducationResponseDto `json:"educations,omitempty"`
 }
 

@@ -70,7 +70,7 @@ func (s *userService) CreateUser(ctx context.Context, user dtos.UserCreateReques
 		Name:     user.Name,
 		Email:    user.Email,
 		Password: user.Password,
-		Sex:      user.Sex,
+		Gender:   user.Gender,
 		Phone:    user.Phone,
 	}
 
@@ -126,7 +126,7 @@ func (s *userService) UpdateUser(ctx context.Context, id int, user dtos.UserUpda
 		existing.Name = user.Name
 	}
 	existing.Phone = user.Phone
-	existing.Sex = user.Sex
+	existing.Gender = user.Gender
 
 	updated, err := s.repo.Update(ctx, id, existing)
 	if err != nil {

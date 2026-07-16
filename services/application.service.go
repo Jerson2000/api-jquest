@@ -88,11 +88,18 @@ func (s *applicationService) ApplyJob(ctx context.Context, userId int, dto dtos.
 		}
 
 		// 4. Create Application
+		resume := dto.ResumeURL
+		if resume == "" {
+			resume = candidate.ResumeURL
+		}
+
 		application := models.Application{
 			CandidateId: candidate.Id,
 			JobId:       dto.JobId,
 			Status:      string(enums.ApplicationStatusPending),
 			AppliedAt:   time.Now(),
+			CoverLetter: dto.CoverLetter,
+			ResumeURL:   resume,
 		}
 
 		newApp, err := applicationRepo.Create(ctx, application)
@@ -196,6 +203,8 @@ func (s *applicationService) toDto(app models.Application) dtos.ApplicationRespo
 		JobId:       app.JobId,
 		Status:      app.Status,
 		AppliedAt:   app.AppliedAt,
+		CoverLetter: app.CoverLetter,
+		ResumeURL:   app.ResumeURL,
 	}
 
 	if app.Job != nil {
